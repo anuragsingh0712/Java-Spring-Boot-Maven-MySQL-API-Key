@@ -6,19 +6,19 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface ClassRegistrationRepository extends JpaRepository<ClassRegistration, Long> {
+public interface ClassRegistrationRepository extends MongoRepository<ClassRegistration, String> {
 
   Optional<ClassRegistration> findByFitnessClassIdAndMemberIdAndStatusIn(
-      Long fitnessClassId, Long memberId, List<RegistrationStatus> statuses);
+      String fitnessClassId, String memberId, List<RegistrationStatus> statuses);
 
-  long countByFitnessClassIdAndStatus(Long fitnessClassId, RegistrationStatus status);
+  long countByFitnessClassIdAndStatus(String fitnessClassId, RegistrationStatus status);
 
   List<ClassRegistration> findByFitnessClassIdAndStatusOrderByWaitlistPositionAsc(
-      Long fitnessClassId, RegistrationStatus status);
+      String fitnessClassId, RegistrationStatus status);
 
-  Page<ClassRegistration> findByMemberId(Long memberId, Pageable pageable);
+  Page<ClassRegistration> findByMemberId(String memberId, Pageable pageable);
 
   Optional<ClassRegistration> findByIdempotencyKey(String idempotencyKey);
 }

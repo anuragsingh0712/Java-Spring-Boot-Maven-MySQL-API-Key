@@ -17,12 +17,12 @@ import lombok.Setter;
 @Builder
 public class PaymentResponse {
 
-  private Long id;
-  private Long memberId;
+  private String id;
+  private String memberId;
   private BigDecimal amount;
   private String currency;
   private PaymentPurpose purpose;
-  private Long referenceId;
+  private String referenceId;
   private PaymentStatus status;
   private String transactionRef;
   private BigDecimal refundedAmount;

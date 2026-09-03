@@ -17,10 +17,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class ClassRegistrationService {
 
   private static final List<RegistrationStatus> ACTIVE_STATUSES =
@@ -42,7 +40,6 @@ public class ClassRegistrationService {
     this.notificationService = notificationService;
   }
 
-  @Transactional
   public synchronized ClassRegistrationResponse register(ClassRegistrationRequest request) {
     if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
       var existing = classRegistrationRepository.findByIdempotencyKey(request.getIdempotencyKey());
@@ -77,8 +74,8 @@ public class ClassRegistrationService {
     if (registeredCount < fitnessClass.getCapacity()) {
       registration =
           ClassRegistration.builder()
-              .fitnessClass(fitnessClass)
-              .member(member)
+              .fitnessClassId(fitnessClass.getId())
+              .memberId(member.getId())
               .status(RegistrationStatus.REGISTERED)
               .registeredAt(Instant.now())
               .idempotencyKey(request.getIdempotencyKey())
@@ -93,8 +90,8 @@ public class ClassRegistrationService {
               fitnessClass.getId(), RegistrationStatus.WAITLISTED);
       registration =
           ClassRegistration.builder()
-              .fitnessClass(fitnessClass)
-              .member(member)
+              .fitnessClassId(fitnessClass.getId())
+              .memberId(member.getId())
               .status(RegistrationStatus.WAITLISTED)
               .waitlistPosition((int) waitlistCount + 1)
               .registeredAt(Instant.now())
@@ -115,16 +112,15 @@ public class ClassRegistrationService {
     return classRegistrationRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public Page<ClassRegistrationResponse> historyByMember(Long memberId, Pageable pageable) {
+  public Page<ClassRegistrationResponse> historyByMember(String memberId, Pageable pageable) {
     return classRegistrationRepository.findByMemberId(memberId, pageable).map(this::toResponse);
   }
 
-  public ClassRegistrationResponse get(Long id) {
+  public ClassRegistrationResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  @Transactional
-  public synchronized ClassRegistrationResponse cancel(Long id) {
+  public synchronized ClassRegistrationResponse cancel(String id) {
     ClassRegistration registration = findOrThrow(id);
     if (registration.getStatus() == RegistrationStatus.CANCELLED) {
       throw new BusinessRuleException("Registration is already cancelled");
@@ -132,13 +128,15 @@ public class ClassRegistrationService {
     boolean wasRegistered = registration.getStatus() == RegistrationStatus.REGISTERED;
     registration.setStatus(RegistrationStatus.CANCELLED);
     classRegistrationRepository.save(registration);
+    FitnessClass fitnessClass = fitnessClassService.findOrThrow(registration.getFitnessClassId());
+    Member member = memberService.findOrThrow(registration.getMemberId());
     notificationService.notify(
-        registration.getMember(),
+        member,
         NotificationType.CLASS_REGISTRATION,
-        "Registration cancelled for class " + registration.getFitnessClass().getName());
+        "Registration cancelled for class " + fitnessClass.getName());
 
     if (wasRegistered) {
-      promoteNextWaitlisted(registration.getFitnessClass());
+      promoteNextWaitlisted(fitnessClass);
     }
     return toResponse(registration);
   }
@@ -152,25 +150,27 @@ public class ClassRegistrationService {
       next.setStatus(RegistrationStatus.REGISTERED);
       next.setWaitlistPosition(null);
       classRegistrationRepository.save(next);
+      Member member = memberService.findOrThrow(next.getMemberId());
       notificationService.notify(
-          next.getMember(),
+          member,
           NotificationType.CLASS_REGISTRATION,
           "You have been promoted from the waitlist for class " + fitnessClass.getName());
     }
   }
 
-  private ClassRegistration findOrThrow(Long id) {
+  private ClassRegistration findOrThrow(String id) {
     return classRegistrationRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Class registration not found: " + id));
   }
 
   private ClassRegistrationResponse toResponse(ClassRegistration registration) {
+    FitnessClass fitnessClass = fitnessClassService.findOrThrow(registration.getFitnessClassId());
     return ClassRegistrationResponse.builder()
         .id(registration.getId())
-        .fitnessClassId(registration.getFitnessClass().getId())
-        .fitnessClassName(registration.getFitnessClass().getName())
-        .memberId(registration.getMember().getId())
+        .fitnessClassId(registration.getFitnessClassId())
+        .fitnessClassName(fitnessClass.getName())
+        .memberId(registration.getMemberId())
         .status(registration.getStatus())
         .waitlistPosition(registration.getWaitlistPosition())
         .registeredAt(registration.getRegisteredAt())

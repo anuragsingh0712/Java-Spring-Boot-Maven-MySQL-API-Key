@@ -9,7 +9,7 @@ import lombok.Setter;
 public class MembershipUpgradeRequest {
 
   @NotNull(message = "newPlanId is required")
-  private Long newPlanId;
+  private String newPlanId;
 
   private String idempotencyKey;
 }

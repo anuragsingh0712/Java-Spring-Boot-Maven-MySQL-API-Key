@@ -52,14 +52,14 @@ public class WorkoutAssignmentController {
   @GetMapping("/member/{memberId}")
   @Operation(summary = "View a member's workout assignment history (paginated)")
   public ResponseEntity<PageResponse<WorkoutAssignmentResponse>> historyByMember(
-      @PathVariable Long memberId, Pageable pageable) {
+      @PathVariable String memberId, Pageable pageable) {
     return ResponseEntity.ok(
         PageResponse.of(workoutAssignmentService.historyByMember(memberId, pageable)));
   }
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a workout assignment by id")
-  public ResponseEntity<WorkoutAssignmentResponse> get(@PathVariable Long id) {
+  public ResponseEntity<WorkoutAssignmentResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(workoutAssignmentService.get(id));
   }
 
@@ -67,7 +67,7 @@ public class WorkoutAssignmentController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','TRAINER','MEMBER')")
   @Operation(summary = "Update workout assignment status/progress notes")
   public ResponseEntity<WorkoutAssignmentResponse> updateProgress(
-      @PathVariable Long id,
+      @PathVariable String id,
       @RequestParam(required = false) WorkoutAssignmentStatus status,
       @RequestParam(required = false) String progressNotes) {
     return ResponseEntity.ok(workoutAssignmentService.updateProgress(id, status, progressNotes));
@@ -76,7 +76,7 @@ public class WorkoutAssignmentController {
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','TRAINER')")
   @Operation(summary = "Delete a workout assignment")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
+  public ResponseEntity<Void> delete(@PathVariable String id) {
     workoutAssignmentService.delete(id);
     return ResponseEntity.noContent().build();
   }

@@ -15,10 +15,10 @@ import lombok.Setter;
 @Builder
 public class ClassRegistrationResponse {
 
-  private Long id;
-  private Long fitnessClassId;
+  private String id;
+  private String fitnessClassId;
   private String fitnessClassName;
-  private Long memberId;
+  private String memberId;
   private RegistrationStatus status;
   private Integer waitlistPosition;
   private Instant registeredAt;

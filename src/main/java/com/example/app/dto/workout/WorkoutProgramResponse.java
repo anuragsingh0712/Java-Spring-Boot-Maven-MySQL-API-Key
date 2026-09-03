@@ -15,11 +15,11 @@ import lombok.Setter;
 @Builder
 public class WorkoutProgramResponse {
 
-  private Long id;
+  private String id;
   private String name;
   private String description;
   private WorkoutLevel level;
-  private Long trainerId;
+  private String trainerId;
   private String trainerName;
   private List<ExerciseResponse> exercises;
 }

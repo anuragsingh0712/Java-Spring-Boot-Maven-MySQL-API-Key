@@ -5,32 +5,24 @@ import com.example.app.dto.trainer.TrainerResponse;
 import com.example.app.entity.Branch;
 import com.example.app.entity.Trainer;
 import com.example.app.exception.ResourceNotFoundException;
-import com.example.app.repository.BranchRepository;
 import com.example.app.repository.TrainerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class TrainerService {
 
   private final TrainerRepository trainerRepository;
-  private final BranchRepository branchRepository;
+  private final BranchService branchService;
 
-  public TrainerService(TrainerRepository trainerRepository, BranchRepository branchRepository) {
+  public TrainerService(TrainerRepository trainerRepository, BranchService branchService) {
     this.trainerRepository = trainerRepository;
-    this.branchRepository = branchRepository;
+    this.branchService = branchService;
   }
 
-  @Transactional
   public TrainerResponse create(TrainerRequest request) {
-    Branch branch =
-        branchRepository
-            .findById(request.getBranchId())
-            .orElseThrow(
-                () -> new ResourceNotFoundException("Branch not found: " + request.getBranchId()));
+    Branch branch = branchService.findOrThrow(request.getBranchId());
     Trainer trainer =
         Trainer.builder()
             .firstName(request.getFirstName())
@@ -40,7 +32,7 @@ public class TrainerService {
             .specialization(request.getSpecialization())
             .certifications(request.getCertifications())
             .experienceYears(request.getExperienceYears())
-            .branch(branch)
+            .branchId(branch.getId())
             .status(request.getStatus())
             .build();
     return toResponse(trainerRepository.save(trainer));
@@ -50,18 +42,13 @@ public class TrainerService {
     return trainerRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public TrainerResponse get(Long id) {
+  public TrainerResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  @Transactional
-  public TrainerResponse update(Long id, TrainerRequest request) {
+  public TrainerResponse update(String id, TrainerRequest request) {
     Trainer trainer = findOrThrow(id);
-    Branch branch =
-        branchRepository
-            .findById(request.getBranchId())
-            .orElseThrow(
-                () -> new ResourceNotFoundException("Branch not found: " + request.getBranchId()));
+    Branch branch = branchService.findOrThrow(request.getBranchId());
     trainer.setFirstName(request.getFirstName());
     trainer.setLastName(request.getLastName());
     trainer.setEmail(request.getEmail());
@@ -69,23 +56,23 @@ public class TrainerService {
     trainer.setSpecialization(request.getSpecialization());
     trainer.setCertifications(request.getCertifications());
     trainer.setExperienceYears(request.getExperienceYears());
-    trainer.setBranch(branch);
+    trainer.setBranchId(branch.getId());
     trainer.setStatus(request.getStatus());
     return toResponse(trainerRepository.save(trainer));
   }
 
-  @Transactional
-  public void delete(Long id) {
+  public void delete(String id) {
     trainerRepository.delete(findOrThrow(id));
   }
 
-  public Trainer findOrThrow(Long id) {
+  public Trainer findOrThrow(String id) {
     return trainerRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Trainer not found: " + id));
   }
 
   private TrainerResponse toResponse(Trainer trainer) {
+    String branchName = branchService.findOrThrow(trainer.getBranchId()).getName();
     return TrainerResponse.builder()
         .id(trainer.getId())
         .firstName(trainer.getFirstName())
@@ -95,8 +82,8 @@ public class TrainerService {
         .specialization(trainer.getSpecialization())
         .certifications(trainer.getCertifications())
         .experienceYears(trainer.getExperienceYears())
-        .branchId(trainer.getBranch().getId())
-        .branchName(trainer.getBranch().getName())
+        .branchId(trainer.getBranchId())
+        .branchName(branchName)
         .status(trainer.getStatus())
         .build();
   }

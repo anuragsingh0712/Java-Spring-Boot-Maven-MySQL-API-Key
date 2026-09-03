@@ -16,9 +16,9 @@ import lombok.Setter;
 @Builder
 public class MembershipResponse {
 
-  private Long id;
-  private Long memberId;
-  private Long planId;
+  private String id;
+  private String memberId;
+  private String planId;
   private String planName;
   private LocalDate startDate;
   private LocalDate endDate;

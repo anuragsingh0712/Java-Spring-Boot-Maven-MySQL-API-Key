@@ -16,8 +16,8 @@ import lombok.Setter;
 @Builder
 public class RefundResponse {
 
-  private Long id;
-  private Long paymentId;
+  private String id;
+  private String paymentId;
   private BigDecimal amount;
   private String reason;
   private RefundStatus status;

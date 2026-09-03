@@ -21,10 +21,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class MembershipService {
 
   private static final List<MembershipStatus> BLOCKING_STATUSES =
@@ -49,7 +47,6 @@ public class MembershipService {
     this.notificationService = notificationService;
   }
 
-  @Transactional
   public MembershipResponse purchase(MembershipPurchaseRequest request) {
     Member member = memberService.findOrThrow(request.getMemberId());
     MembershipPlan plan = membershipPlanService.findOrThrow(request.getPlanId());
@@ -63,8 +60,8 @@ public class MembershipService {
 
     Membership membership =
         Membership.builder()
-            .member(member)
-            .plan(plan)
+            .memberId(member.getId())
+            .planId(plan.getId())
             .status(MembershipStatus.PENDING)
             .price(plan.getPrice())
             .build();
@@ -97,27 +94,27 @@ public class MembershipService {
     return membershipRepository.findAll(pageable).map(this::toResponseWithLazyExpiry);
   }
 
-  public Page<MembershipResponse> history(Long memberId, Pageable pageable) {
+  public Page<MembershipResponse> history(String memberId, Pageable pageable) {
     return membershipRepository
         .findByMemberId(memberId, pageable)
         .map(this::toResponseWithLazyExpiry);
   }
 
-  public MembershipResponse get(Long id) {
+  public MembershipResponse get(String id) {
     return toResponseWithLazyExpiry(findOrThrow(id));
   }
 
-  @Transactional
-  public MembershipResponse renew(Long id, String idempotencyKey, Boolean simulateFailure) {
+  public MembershipResponse renew(String id, String idempotencyKey, Boolean simulateFailure) {
     Membership membership = findOrThrow(id);
     if (membership.getStatus() == MembershipStatus.CANCELLED) {
       throw new BusinessRuleException("Cancelled memberships cannot be renewed");
     }
-    MembershipPlan plan = membership.getPlan();
+    MembershipPlan plan = membershipPlanService.findOrThrow(membership.getPlanId());
+    Member member = memberService.findOrThrow(membership.getMemberId());
 
     Payment payment =
         paymentService.processPayment(
-            membership.getMember(),
+            member,
             plan.getPrice(),
             "USD",
             PaymentPurpose.MEMBERSHIP_RENEWAL,
@@ -136,28 +133,27 @@ public class MembershipService {
         membership.setStartDate(LocalDate.now());
       }
       notificationService.notify(
-          membership.getMember(),
+          member,
           NotificationType.MEMBERSHIP_RENEWAL,
           "Membership renewed until " + membership.getEndDate());
     }
     return toResponse(membershipRepository.save(membership));
   }
 
-  @Transactional
-  public MembershipResponse activate(Long id) {
+  public MembershipResponse activate(String id) {
     Membership membership = findOrThrow(id);
     if (membership.getStatus() != MembershipStatus.PENDING) {
       throw new BusinessRuleException(
           "Only PENDING memberships can be activated. Current status: " + membership.getStatus());
     }
+    MembershipPlan plan = membershipPlanService.findOrThrow(membership.getPlanId());
     membership.setStatus(MembershipStatus.ACTIVE);
     membership.setStartDate(LocalDate.now());
-    membership.setEndDate(LocalDate.now().plusDays(membership.getPlan().getDurationDays()));
+    membership.setEndDate(LocalDate.now().plusDays(plan.getDurationDays()));
     return toResponse(membershipRepository.save(membership));
   }
 
-  @Transactional
-  public MembershipResponse pause(Long id) {
+  public MembershipResponse pause(String id) {
     Membership membership = findOrThrow(id);
     if (membership.getStatus() != MembershipStatus.ACTIVE) {
       throw new BusinessRuleException(
@@ -168,8 +164,7 @@ public class MembershipService {
     return toResponse(membershipRepository.save(membership));
   }
 
-  @Transactional
-  public MembershipResponse resume(Long id) {
+  public MembershipResponse resume(String id) {
     Membership membership = findOrThrow(id);
     if (membership.getStatus() != MembershipStatus.PAUSED) {
       throw new BusinessRuleException(
@@ -185,8 +180,7 @@ public class MembershipService {
     return toResponse(membershipRepository.save(membership));
   }
 
-  @Transactional
-  public MembershipResponse cancel(Long id) {
+  public MembershipResponse cancel(String id) {
     Membership membership = findOrThrow(id);
     if (membership.getStatus() == MembershipStatus.CANCELLED) {
       throw new BusinessRuleException("Membership is already cancelled");
@@ -195,8 +189,7 @@ public class MembershipService {
     return toResponse(membershipRepository.save(membership));
   }
 
-  @Transactional
-  public MembershipResponse upgrade(Long id, MembershipUpgradeRequest request) {
+  public MembershipResponse upgrade(String id, MembershipUpgradeRequest request) {
     Membership membership = findOrThrow(id);
     if (membership.getStatus() != MembershipStatus.ACTIVE) {
       throw new BusinessRuleException(
@@ -204,10 +197,11 @@ public class MembershipService {
               + membership.getStatus());
     }
     MembershipPlan newPlan = membershipPlanService.findOrThrow(request.getNewPlanId());
+    Member member = memberService.findOrThrow(membership.getMemberId());
 
     Payment payment =
         paymentService.processPayment(
-            membership.getMember(),
+            member,
             newPlan.getPrice(),
             "USD",
             PaymentPurpose.MEMBERSHIP_PURCHASE,
@@ -216,14 +210,14 @@ public class MembershipService {
             false);
 
     if (payment.getStatus() == PaymentStatus.SUCCESS) {
-      membership.setPlan(newPlan);
+      membership.setPlanId(newPlan.getId());
       membership.setPrice(newPlan.getPrice());
       membership.setEndDate(LocalDate.now().plusDays(newPlan.getDurationDays()));
     }
     return toResponse(membershipRepository.save(membership));
   }
 
-  public Membership findOrThrow(Long id) {
+  public Membership findOrThrow(String id) {
     return membershipRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Membership not found: " + id));
@@ -240,11 +234,12 @@ public class MembershipService {
   }
 
   private MembershipResponse toResponse(Membership membership) {
+    MembershipPlan plan = membershipPlanService.findOrThrow(membership.getPlanId());
     return MembershipResponse.builder()
         .id(membership.getId())
-        .memberId(membership.getMember().getId())
-        .planId(membership.getPlan().getId())
-        .planName(membership.getPlan().getName())
+        .memberId(membership.getMemberId())
+        .planId(membership.getPlanId())
+        .planName(plan.getName())
         .startDate(membership.getStartDate())
         .endDate(membership.getEndDate())
         .status(membership.getStatus())

@@ -16,10 +16,8 @@ import com.example.app.repository.FitnessClassRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class FitnessClassService {
 
   private final FitnessClassRepository fitnessClassRepository;
@@ -38,7 +36,6 @@ public class FitnessClassService {
     this.trainerService = trainerService;
   }
 
-  @Transactional
   public FitnessClassResponse create(FitnessClassRequest request) {
     Branch branch = branchService.findOrThrow(request.getBranchId());
     if (branch.getStatus() == BranchStatus.CLOSED
@@ -59,8 +56,8 @@ public class FitnessClassService {
         FitnessClass.builder()
             .name(request.getName())
             .classType(request.getClassType())
-            .branch(branch)
-            .trainer(trainer)
+            .branchId(branch.getId())
+            .trainerId(trainer.getId())
             .startTime(request.getStartTime())
             .endTime(request.getEndTime())
             .capacity(request.getCapacity())
@@ -73,23 +70,21 @@ public class FitnessClassService {
     return fitnessClassRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public FitnessClassResponse get(Long id) {
+  public FitnessClassResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  @Transactional
-  public FitnessClassResponse cancel(Long id) {
+  public FitnessClassResponse cancel(String id) {
     FitnessClass fitnessClass = findOrThrow(id);
     fitnessClass.setStatus(ClassStatus.CANCELLED);
     return toResponse(fitnessClassRepository.save(fitnessClass));
   }
 
-  @Transactional
-  public void delete(Long id) {
+  public void delete(String id) {
     fitnessClassRepository.delete(findOrThrow(id));
   }
 
-  public FitnessClass findOrThrow(Long id) {
+  public FitnessClass findOrThrow(String id) {
     return fitnessClassRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Fitness class not found: " + id));
@@ -102,17 +97,16 @@ public class FitnessClassService {
     long waitlisted =
         classRegistrationRepository.countByFitnessClassIdAndStatus(
             fitnessClass.getId(), RegistrationStatus.WAITLISTED);
+    String branchName = branchService.findOrThrow(fitnessClass.getBranchId()).getName();
+    Trainer trainer = trainerService.findOrThrow(fitnessClass.getTrainerId());
     return FitnessClassResponse.builder()
         .id(fitnessClass.getId())
         .name(fitnessClass.getName())
         .classType(fitnessClass.getClassType())
-        .branchId(fitnessClass.getBranch().getId())
-        .branchName(fitnessClass.getBranch().getName())
-        .trainerId(fitnessClass.getTrainer().getId())
-        .trainerName(
-            fitnessClass.getTrainer().getFirstName()
-                + " "
-                + fitnessClass.getTrainer().getLastName())
+        .branchId(fitnessClass.getBranchId())
+        .branchName(branchName)
+        .trainerId(trainer.getId())
+        .trainerName(trainer.getFirstName() + " " + trainer.getLastName())
         .startTime(fitnessClass.getStartTime())
         .endTime(fitnessClass.getEndTime())
         .capacity(fitnessClass.getCapacity())

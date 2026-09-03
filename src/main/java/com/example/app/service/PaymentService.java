@@ -14,10 +14,8 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class PaymentService {
 
   private final PaymentRepository paymentRepository;
@@ -33,7 +31,6 @@ public class PaymentService {
     this.notificationService = notificationService;
   }
 
-  @Transactional
   public PaymentResponse processStandalonePayment(
       PaymentRequest request, String idempotencyHeader) {
     Member member = memberService.findOrThrow(request.getMemberId());
@@ -56,13 +53,12 @@ public class PaymentService {
    * endpoint and by orchestration flows such as membership purchase/renewal. Never activates a paid
    * service on failure.
    */
-  @Transactional
   public Payment processPayment(
       Member member,
       BigDecimal amount,
       String currency,
       PaymentPurpose purpose,
-      Long referenceId,
+      String referenceId,
       String idempotencyKey,
       boolean simulateFailure) {
     if (idempotencyKey != null && !idempotencyKey.isBlank()) {
@@ -74,7 +70,7 @@ public class PaymentService {
 
     Payment payment =
         Payment.builder()
-            .member(member)
+            .memberId(member.getId())
             .amount(amount)
             .currency(currency)
             .purpose(purpose)
@@ -106,11 +102,11 @@ public class PaymentService {
     return paymentRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public PaymentResponse get(Long id) {
+  public PaymentResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  public Payment findOrThrow(Long id) {
+  public Payment findOrThrow(String id) {
     return paymentRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + id));
@@ -126,7 +122,7 @@ public class PaymentService {
   PaymentResponse toResponse(Payment payment) {
     return PaymentResponse.builder()
         .id(payment.getId())
-        .memberId(payment.getMember().getId())
+        .memberId(payment.getMemberId())
         .amount(payment.getAmount())
         .currency(payment.getCurrency())
         .purpose(payment.getPurpose())

@@ -57,14 +57,14 @@ public class ClassRegistrationController {
   @GetMapping("/member/{memberId}")
   @Operation(summary = "View a member's class registration history (paginated)")
   public ResponseEntity<PageResponse<ClassRegistrationResponse>> historyByMember(
-      @PathVariable Long memberId, Pageable pageable) {
+      @PathVariable String memberId, Pageable pageable) {
     return ResponseEntity.ok(
         PageResponse.of(classRegistrationService.historyByMember(memberId, pageable)));
   }
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a class registration by id")
-  public ResponseEntity<ClassRegistrationResponse> get(@PathVariable Long id) {
+  public ResponseEntity<ClassRegistrationResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(classRegistrationService.get(id));
   }
 
@@ -72,7 +72,7 @@ public class ClassRegistrationController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST','MEMBER')")
   @Operation(
       summary = "Cancel a class registration (promotes the next waitlisted member automatically)")
-  public ResponseEntity<ClassRegistrationResponse> cancel(@PathVariable Long id) {
+  public ResponseEntity<ClassRegistrationResponse> cancel(@PathVariable String id) {
     return ResponseEntity.ok(classRegistrationService.cancel(id));
   }
 }

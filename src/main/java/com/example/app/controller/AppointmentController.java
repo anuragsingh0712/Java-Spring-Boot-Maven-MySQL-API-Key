@@ -51,21 +51,21 @@ public class AppointmentController {
   @GetMapping("/member/{memberId}")
   @Operation(summary = "View a member's appointment history (paginated)")
   public ResponseEntity<PageResponse<AppointmentResponse>> historyByMember(
-      @PathVariable Long memberId, Pageable pageable) {
+      @PathVariable String memberId, Pageable pageable) {
     return ResponseEntity.ok(
         PageResponse.of(appointmentService.historyByMember(memberId, pageable)));
   }
 
   @GetMapping("/{id}")
   @Operation(summary = "Get an appointment by id")
-  public ResponseEntity<AppointmentResponse> get(@PathVariable Long id) {
+  public ResponseEntity<AppointmentResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(appointmentService.get(id));
   }
 
   @PostMapping("/{id}/confirm")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST','TRAINER')")
   @Operation(summary = "Confirm a requested appointment")
-  public ResponseEntity<AppointmentResponse> confirm(@PathVariable Long id) {
+  public ResponseEntity<AppointmentResponse> confirm(@PathVariable String id) {
     return ResponseEntity.ok(appointmentService.confirm(id));
   }
 
@@ -73,21 +73,21 @@ public class AppointmentController {
   @PreAuthorize(
       "hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST','TRAINER','MEMBER')")
   @Operation(summary = "Cancel an appointment")
-  public ResponseEntity<AppointmentResponse> cancel(@PathVariable Long id) {
+  public ResponseEntity<AppointmentResponse> cancel(@PathVariable String id) {
     return ResponseEntity.ok(appointmentService.cancel(id));
   }
 
   @PostMapping("/{id}/complete")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','TRAINER')")
   @Operation(summary = "Mark an appointment as completed")
-  public ResponseEntity<AppointmentResponse> complete(@PathVariable Long id) {
+  public ResponseEntity<AppointmentResponse> complete(@PathVariable String id) {
     return ResponseEntity.ok(appointmentService.complete(id));
   }
 
   @PostMapping("/{id}/no-show")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','TRAINER')")
   @Operation(summary = "Mark an appointment as a no-show")
-  public ResponseEntity<AppointmentResponse> noShow(@PathVariable Long id) {
+  public ResponseEntity<AppointmentResponse> noShow(@PathVariable String id) {
     return ResponseEntity.ok(appointmentService.markNoShow(id));
   }
 }

@@ -14,10 +14,8 @@ import java.math.BigDecimal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class RefundService {
 
   private final RefundRepository refundRepository;
@@ -28,7 +26,6 @@ public class RefundService {
     this.paymentRepository = paymentRepository;
   }
 
-  @Transactional
   public RefundResponse create(RefundRequest request) {
     Payment payment =
         paymentRepository
@@ -53,7 +50,7 @@ public class RefundService {
 
     Refund refund =
         Refund.builder()
-            .payment(payment)
+            .paymentId(payment.getId())
             .amount(request.getAmount())
             .reason(request.getReason())
             .status(RefundStatus.SUCCESS)
@@ -76,7 +73,7 @@ public class RefundService {
     return refundRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public RefundResponse get(Long id) {
+  public RefundResponse get(String id) {
     return toResponse(
         refundRepository
             .findById(id)
@@ -86,7 +83,7 @@ public class RefundService {
   private RefundResponse toResponse(Refund refund) {
     return RefundResponse.builder()
         .id(refund.getId())
-        .paymentId(refund.getPayment().getId())
+        .paymentId(refund.getPaymentId())
         .amount(refund.getAmount())
         .reason(refund.getReason())
         .status(refund.getStatus())

@@ -55,14 +55,14 @@ public class MembershipController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a membership by id")
-  public ResponseEntity<MembershipResponse> get(@PathVariable Long id) {
+  public ResponseEntity<MembershipResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(membershipService.get(id));
   }
 
   @GetMapping("/member/{memberId}/history")
   @Operation(summary = "View a member's membership history (paginated)")
   public ResponseEntity<PageResponse<MembershipResponse>> history(
-      @PathVariable Long memberId, Pageable pageable) {
+      @PathVariable String memberId, Pageable pageable) {
     return ResponseEntity.ok(PageResponse.of(membershipService.history(memberId, pageable)));
   }
 
@@ -70,7 +70,7 @@ public class MembershipController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST','MEMBER')")
   @Operation(summary = "Renew a membership (extends the period on successful payment)")
   public ResponseEntity<MembershipResponse> renew(
-      @PathVariable Long id,
+      @PathVariable String id,
       @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
       @RequestParam(required = false) Boolean simulateFailure) {
     return ResponseEntity.ok(membershipService.renew(id, idempotencyKey, simulateFailure));
@@ -79,28 +79,28 @@ public class MembershipController {
   @PostMapping("/{id}/activate")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST')")
   @Operation(summary = "Manually activate a PENDING membership")
-  public ResponseEntity<MembershipResponse> activate(@PathVariable Long id) {
+  public ResponseEntity<MembershipResponse> activate(@PathVariable String id) {
     return ResponseEntity.ok(membershipService.activate(id));
   }
 
   @PostMapping("/{id}/pause")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST','MEMBER')")
   @Operation(summary = "Pause/freeze an ACTIVE membership")
-  public ResponseEntity<MembershipResponse> pause(@PathVariable Long id) {
+  public ResponseEntity<MembershipResponse> pause(@PathVariable String id) {
     return ResponseEntity.ok(membershipService.pause(id));
   }
 
   @PostMapping("/{id}/resume")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST','MEMBER')")
   @Operation(summary = "Resume a PAUSED membership")
-  public ResponseEntity<MembershipResponse> resume(@PathVariable Long id) {
+  public ResponseEntity<MembershipResponse> resume(@PathVariable String id) {
     return ResponseEntity.ok(membershipService.resume(id));
   }
 
   @PostMapping("/{id}/cancel")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST','MEMBER')")
   @Operation(summary = "Cancel a membership")
-  public ResponseEntity<MembershipResponse> cancel(@PathVariable Long id) {
+  public ResponseEntity<MembershipResponse> cancel(@PathVariable String id) {
     return ResponseEntity.ok(membershipService.cancel(id));
   }
 
@@ -108,7 +108,7 @@ public class MembershipController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST','MEMBER')")
   @Operation(summary = "Upgrade or downgrade an ACTIVE membership to a different plan")
   public ResponseEntity<MembershipResponse> upgrade(
-      @PathVariable Long id, @Valid @RequestBody MembershipUpgradeRequest request) {
+      @PathVariable String id, @Valid @RequestBody MembershipUpgradeRequest request) {
     return ResponseEntity.ok(membershipService.upgrade(id, request));
   }
 }

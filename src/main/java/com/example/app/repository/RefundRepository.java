@@ -1,6 +1,6 @@
 package com.example.app.repository;
 
 import com.example.app.entity.Refund;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface RefundRepository extends JpaRepository<Refund, Long> {}
+public interface RefundRepository extends MongoRepository<Refund, String> {}

@@ -44,7 +44,7 @@ public class RefundController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a refund by id")
-  public ResponseEntity<RefundResponse> get(@PathVariable Long id) {
+  public ResponseEntity<RefundResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(refundService.get(id));
   }
 }

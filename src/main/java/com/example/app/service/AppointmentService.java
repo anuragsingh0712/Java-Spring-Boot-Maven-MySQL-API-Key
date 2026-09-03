@@ -20,10 +20,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class AppointmentService {
 
   private static final List<AppointmentStatus> ACTIVE_STATUSES =
@@ -51,7 +49,6 @@ public class AppointmentService {
     this.notificationService = notificationService;
   }
 
-  @Transactional
   public synchronized AppointmentResponse book(AppointmentRequest request) {
     if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
       var existing = appointmentRepository.findByIdempotencyKey(request.getIdempotencyKey());
@@ -99,9 +96,9 @@ public class AppointmentService {
 
     Appointment appointment =
         Appointment.builder()
-            .member(member)
-            .trainer(trainer)
-            .branch(branch)
+            .memberId(member.getId())
+            .trainerId(trainer.getId())
+            .branchId(branch.getId())
             .startTime(request.getStartTime())
             .endTime(request.getEndTime())
             .status(AppointmentStatus.REQUESTED)
@@ -123,16 +120,15 @@ public class AppointmentService {
     return appointmentRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public Page<AppointmentResponse> historyByMember(Long memberId, Pageable pageable) {
+  public Page<AppointmentResponse> historyByMember(String memberId, Pageable pageable) {
     return appointmentRepository.findByMemberId(memberId, pageable).map(this::toResponse);
   }
 
-  public AppointmentResponse get(Long id) {
+  public AppointmentResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  @Transactional
-  public AppointmentResponse confirm(Long id) {
+  public AppointmentResponse confirm(String id) {
     Appointment appointment = findOrThrow(id);
     if (appointment.getStatus() != AppointmentStatus.REQUESTED) {
       throw new BusinessRuleException(
@@ -143,8 +139,7 @@ public class AppointmentService {
     return toResponse(appointmentRepository.save(appointment));
   }
 
-  @Transactional
-  public AppointmentResponse cancel(Long id) {
+  public AppointmentResponse cancel(String id) {
     Appointment appointment = findOrThrow(id);
     if (appointment.getStatus() == AppointmentStatus.COMPLETED
         || appointment.getStatus() == AppointmentStatus.CANCELLED) {
@@ -153,15 +148,16 @@ public class AppointmentService {
     }
     appointment.setStatus(AppointmentStatus.CANCELLED);
     Appointment saved = appointmentRepository.save(appointment);
+    Member member = memberService.findOrThrow(appointment.getMemberId());
+    Trainer trainer = trainerService.findOrThrow(appointment.getTrainerId());
     notificationService.notify(
-        appointment.getMember(),
+        member,
         NotificationType.APPOINTMENT_CANCELLATION,
-        "Appointment cancelled with trainer " + appointment.getTrainer().getFirstName());
+        "Appointment cancelled with trainer " + trainer.getFirstName());
     return toResponse(saved);
   }
 
-  @Transactional
-  public AppointmentResponse complete(Long id) {
+  public AppointmentResponse complete(String id) {
     Appointment appointment = findOrThrow(id);
     if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
       throw new BusinessRuleException(
@@ -172,8 +168,7 @@ public class AppointmentService {
     return toResponse(appointmentRepository.save(appointment));
   }
 
-  @Transactional
-  public AppointmentResponse markNoShow(Long id) {
+  public AppointmentResponse markNoShow(String id) {
     Appointment appointment = findOrThrow(id);
     if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
       throw new BusinessRuleException(
@@ -200,20 +195,20 @@ public class AppointmentService {
     }
   }
 
-  private Appointment findOrThrow(Long id) {
+  private Appointment findOrThrow(String id) {
     return appointmentRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Appointment not found: " + id));
   }
 
   private AppointmentResponse toResponse(Appointment appointment) {
+    Trainer trainer = trainerService.findOrThrow(appointment.getTrainerId());
     return AppointmentResponse.builder()
         .id(appointment.getId())
-        .memberId(appointment.getMember().getId())
-        .trainerId(appointment.getTrainer().getId())
-        .trainerName(
-            appointment.getTrainer().getFirstName() + " " + appointment.getTrainer().getLastName())
-        .branchId(appointment.getBranch().getId())
+        .memberId(appointment.getMemberId())
+        .trainerId(appointment.getTrainerId())
+        .trainerName(trainer.getFirstName() + " " + trainer.getLastName())
+        .branchId(appointment.getBranchId())
         .startTime(appointment.getStartTime())
         .endTime(appointment.getEndTime())
         .status(appointment.getStatus())

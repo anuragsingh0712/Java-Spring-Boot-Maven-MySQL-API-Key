@@ -33,7 +33,7 @@ public class MemberRequest {
   private String emergencyContactPhone;
 
   @NotNull(message = "branchId is required")
-  private Long branchId;
+  private String branchId;
 
   @NotNull(message = "status is required")
   private MemberStatus status;

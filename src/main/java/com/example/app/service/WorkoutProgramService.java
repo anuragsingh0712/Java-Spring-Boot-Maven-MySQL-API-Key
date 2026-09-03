@@ -12,14 +12,14 @@ import com.example.app.exception.BusinessRuleException;
 import com.example.app.exception.ResourceNotFoundException;
 import com.example.app.repository.WorkoutProgramRepository;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class WorkoutProgramService {
 
   private final WorkoutProgramRepository workoutProgramRepository;
@@ -31,7 +31,6 @@ public class WorkoutProgramService {
     this.trainerService = trainerService;
   }
 
-  @Transactional
   public WorkoutProgramResponse create(WorkoutProgramRequest request) {
     Trainer trainer = null;
     if (request.getTrainerId() != null) {
@@ -47,7 +46,7 @@ public class WorkoutProgramService {
             .name(request.getName())
             .description(request.getDescription())
             .level(request.getLevel())
-            .trainer(trainer)
+            .trainerId(trainer != null ? trainer.getId() : null)
             .exercises(new ArrayList<>())
             .build();
 
@@ -60,12 +59,11 @@ public class WorkoutProgramService {
     return workoutProgramRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public WorkoutProgramResponse get(Long id) {
+  public WorkoutProgramResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  @Transactional
-  public WorkoutProgramResponse update(Long id, WorkoutProgramRequest request) {
+  public WorkoutProgramResponse update(String id, WorkoutProgramRequest request) {
     WorkoutProgram program = findOrThrow(id);
     Trainer trainer = null;
     if (request.getTrainerId() != null) {
@@ -78,18 +76,17 @@ public class WorkoutProgramService {
     program.setName(request.getName());
     program.setDescription(request.getDescription());
     program.setLevel(request.getLevel());
-    program.setTrainer(trainer);
+    program.setTrainerId(trainer != null ? trainer.getId() : null);
     program.getExercises().clear();
     addExercises(program, request.getExercises());
     return toResponse(workoutProgramRepository.save(program));
   }
 
-  @Transactional
-  public void delete(Long id) {
+  public void delete(String id) {
     workoutProgramRepository.delete(findOrThrow(id));
   }
 
-  public WorkoutProgram findOrThrow(Long id) {
+  public WorkoutProgram findOrThrow(String id) {
     return workoutProgramRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Workout program not found: " + id));
@@ -103,7 +100,7 @@ public class WorkoutProgramService {
     for (ExerciseRequest er : exerciseRequests) {
       Exercise exercise =
           Exercise.builder()
-              .workoutProgram(program)
+              .id(UUID.randomUUID().toString())
               .name(er.getName())
               .category(er.getCategory())
               .sets(er.getSets())
@@ -119,6 +116,9 @@ public class WorkoutProgramService {
   private WorkoutProgramResponse toResponse(WorkoutProgram program) {
     List<ExerciseResponse> exercises =
         program.getExercises().stream()
+            .sorted(
+                Comparator.comparing(
+                    Exercise::getOrderIndex, Comparator.nullsLast(Comparator.naturalOrder())))
             .map(
                 e ->
                     ExerciseResponse.builder()
@@ -131,16 +131,15 @@ public class WorkoutProgramService {
                         .orderIndex(e.getOrderIndex())
                         .build())
             .toList();
+    Trainer trainer =
+        program.getTrainerId() != null ? trainerService.findOrThrow(program.getTrainerId()) : null;
     return WorkoutProgramResponse.builder()
         .id(program.getId())
         .name(program.getName())
         .description(program.getDescription())
         .level(program.getLevel())
-        .trainerId(program.getTrainer() != null ? program.getTrainer().getId() : null)
-        .trainerName(
-            program.getTrainer() != null
-                ? program.getTrainer().getFirstName() + " " + program.getTrainer().getLastName()
-                : null)
+        .trainerId(program.getTrainerId())
+        .trainerName(trainer != null ? trainer.getFirstName() + " " + trainer.getLastName() : null)
         .exercises(exercises)
         .build();
   }

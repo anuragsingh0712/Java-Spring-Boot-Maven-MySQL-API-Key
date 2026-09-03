@@ -27,7 +27,7 @@ public class TrainerRequest {
   private Integer experienceYears;
 
   @NotNull(message = "branchId is required")
-  private Long branchId;
+  private String branchId;
 
   @NotNull(message = "status is required")
   private TrainerStatus status;

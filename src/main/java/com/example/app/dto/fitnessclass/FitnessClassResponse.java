@@ -15,12 +15,12 @@ import lombok.Setter;
 @Builder
 public class FitnessClassResponse {
 
-  private Long id;
+  private String id;
   private String name;
   private String classType;
-  private Long branchId;
+  private String branchId;
   private String branchName;
-  private Long trainerId;
+  private String trainerId;
   private String trainerName;
   private LocalDateTime startTime;
   private LocalDateTime endTime;

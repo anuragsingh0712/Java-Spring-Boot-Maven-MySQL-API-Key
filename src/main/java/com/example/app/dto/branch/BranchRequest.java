@@ -13,7 +13,7 @@ import lombok.Setter;
 public class BranchRequest {
 
   @NotNull(message = "gymId is required")
-  private Long gymId;
+  private String gymId;
 
   @NotBlank(message = "name is required")
   private String name;

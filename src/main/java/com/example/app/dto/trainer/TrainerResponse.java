@@ -14,7 +14,7 @@ import lombok.Setter;
 @Builder
 public class TrainerResponse {
 
-  private Long id;
+  private String id;
   private String firstName;
   private String lastName;
   private String email;
@@ -22,7 +22,7 @@ public class TrainerResponse {
   private String specialization;
   private String certifications;
   private Integer experienceYears;
-  private Long branchId;
+  private String branchId;
   private String branchName;
   private TrainerStatus status;
 }

@@ -1,6 +1,6 @@
 package com.example.app.repository;
 
 import com.example.app.entity.FitnessClass;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface FitnessClassRepository extends JpaRepository<FitnessClass, Long> {}
+public interface FitnessClassRepository extends MongoRepository<FitnessClass, String> {}

@@ -12,10 +12,8 @@ import java.time.LocalDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class WorkoutAssignmentService {
 
   private final WorkoutAssignmentRepository workoutAssignmentRepository;
@@ -31,15 +29,14 @@ public class WorkoutAssignmentService {
     this.memberService = memberService;
   }
 
-  @Transactional
   public WorkoutAssignmentResponse assign(WorkoutAssignmentRequest request) {
     WorkoutProgram program = workoutProgramService.findOrThrow(request.getWorkoutProgramId());
     Member member = memberService.findOrThrow(request.getMemberId());
 
     WorkoutAssignment assignment =
         WorkoutAssignment.builder()
-            .workoutProgram(program)
-            .member(member)
+            .workoutProgramId(program.getId())
+            .memberId(member.getId())
             .assignedDate(
                 request.getAssignedDate() != null ? request.getAssignedDate() : LocalDate.now())
             .status(
@@ -55,17 +52,16 @@ public class WorkoutAssignmentService {
     return workoutAssignmentRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public Page<WorkoutAssignmentResponse> historyByMember(Long memberId, Pageable pageable) {
+  public Page<WorkoutAssignmentResponse> historyByMember(String memberId, Pageable pageable) {
     return workoutAssignmentRepository.findByMemberId(memberId, pageable).map(this::toResponse);
   }
 
-  public WorkoutAssignmentResponse get(Long id) {
+  public WorkoutAssignmentResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  @Transactional
   public WorkoutAssignmentResponse updateProgress(
-      Long id, WorkoutAssignmentStatus status, String progressNotes) {
+      String id, WorkoutAssignmentStatus status, String progressNotes) {
     WorkoutAssignment assignment = findOrThrow(id);
     if (status != null) {
       assignment.setStatus(status);
@@ -76,23 +72,23 @@ public class WorkoutAssignmentService {
     return toResponse(workoutAssignmentRepository.save(assignment));
   }
 
-  @Transactional
-  public void delete(Long id) {
+  public void delete(String id) {
     workoutAssignmentRepository.delete(findOrThrow(id));
   }
 
-  private WorkoutAssignment findOrThrow(Long id) {
+  private WorkoutAssignment findOrThrow(String id) {
     return workoutAssignmentRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Workout assignment not found: " + id));
   }
 
   private WorkoutAssignmentResponse toResponse(WorkoutAssignment assignment) {
+    WorkoutProgram program = workoutProgramService.findOrThrow(assignment.getWorkoutProgramId());
     return WorkoutAssignmentResponse.builder()
         .id(assignment.getId())
-        .workoutProgramId(assignment.getWorkoutProgram().getId())
-        .workoutProgramName(assignment.getWorkoutProgram().getName())
-        .memberId(assignment.getMember().getId())
+        .workoutProgramId(assignment.getWorkoutProgramId())
+        .workoutProgramName(program.getName())
+        .memberId(assignment.getMemberId())
         .assignedDate(assignment.getAssignedDate())
         .status(assignment.getStatus())
         .progressNotes(assignment.getProgressNotes())

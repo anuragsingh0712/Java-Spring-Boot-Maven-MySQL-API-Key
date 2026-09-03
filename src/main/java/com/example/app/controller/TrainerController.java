@@ -46,7 +46,7 @@ public class TrainerController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a trainer by id")
-  public ResponseEntity<TrainerResponse> get(@PathVariable Long id) {
+  public ResponseEntity<TrainerResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(trainerService.get(id));
   }
 
@@ -54,14 +54,14 @@ public class TrainerController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER')")
   @Operation(summary = "Update a trainer")
   public ResponseEntity<TrainerResponse> update(
-      @PathVariable Long id, @Valid @RequestBody TrainerRequest request) {
+      @PathVariable String id, @Valid @RequestBody TrainerRequest request) {
     return ResponseEntity.ok(trainerService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER')")
   @Operation(summary = "Delete a trainer")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
+  public ResponseEntity<Void> delete(@PathVariable String id) {
     trainerService.delete(id);
     return ResponseEntity.noContent().build();
   }

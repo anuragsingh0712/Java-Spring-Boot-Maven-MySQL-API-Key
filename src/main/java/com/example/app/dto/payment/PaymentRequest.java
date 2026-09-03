@@ -13,7 +13,7 @@ import lombok.Setter;
 public class PaymentRequest {
 
   @NotNull(message = "memberId is required")
-  private Long memberId;
+  private String memberId;
 
   @NotNull(message = "amount is required")
   @DecimalMin(value = "0.01", message = "amount must be greater than zero")
@@ -25,7 +25,7 @@ public class PaymentRequest {
   @NotNull(message = "purpose is required")
   private PaymentPurpose purpose;
 
-  private Long referenceId;
+  private String referenceId;
 
   /**
    * Optional idempotency key. If omitted, the value of the Idempotency-Key HTTP header is used

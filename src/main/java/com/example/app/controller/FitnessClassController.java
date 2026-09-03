@@ -46,21 +46,21 @@ public class FitnessClassController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a fitness class by id")
-  public ResponseEntity<FitnessClassResponse> get(@PathVariable Long id) {
+  public ResponseEntity<FitnessClassResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(fitnessClassService.get(id));
   }
 
   @PostMapping("/{id}/cancel")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER')")
   @Operation(summary = "Cancel a scheduled fitness class")
-  public ResponseEntity<FitnessClassResponse> cancel(@PathVariable Long id) {
+  public ResponseEntity<FitnessClassResponse> cancel(@PathVariable String id) {
     return ResponseEntity.ok(fitnessClassService.cancel(id));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER')")
   @Operation(summary = "Delete a fitness class")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
+  public ResponseEntity<Void> delete(@PathVariable String id) {
     fitnessClassService.delete(id);
     return ResponseEntity.noContent().build();
   }

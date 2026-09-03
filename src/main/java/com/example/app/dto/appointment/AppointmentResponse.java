@@ -15,11 +15,11 @@ import lombok.Setter;
 @Builder
 public class AppointmentResponse {
 
-  private Long id;
-  private Long memberId;
-  private Long trainerId;
+  private String id;
+  private String memberId;
+  private String trainerId;
   private String trainerName;
-  private Long branchId;
+  private String branchId;
   private LocalDateTime startTime;
   private LocalDateTime endTime;
   private AppointmentStatus status;

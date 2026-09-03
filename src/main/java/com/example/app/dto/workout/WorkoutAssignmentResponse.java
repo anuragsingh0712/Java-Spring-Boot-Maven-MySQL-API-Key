@@ -15,10 +15,10 @@ import lombok.Setter;
 @Builder
 public class WorkoutAssignmentResponse {
 
-  private Long id;
-  private Long workoutProgramId;
+  private String id;
+  private String workoutProgramId;
   private String workoutProgramName;
-  private Long memberId;
+  private String memberId;
   private LocalDate assignedDate;
   private WorkoutAssignmentStatus status;
   private String progressNotes;

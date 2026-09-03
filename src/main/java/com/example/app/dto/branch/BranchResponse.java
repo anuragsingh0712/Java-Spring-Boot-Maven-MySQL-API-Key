@@ -15,8 +15,8 @@ import lombok.Setter;
 @Builder
 public class BranchResponse {
 
-  private Long id;
-  private Long gymId;
+  private String id;
+  private String gymId;
   private String gymName;
   private String name;
   private String address;

@@ -59,7 +59,7 @@ public class ApiKeyController {
   @Operation(summary = "Revoke an API key (requires X-Admin-Key header)")
   public ResponseEntity<ApiKeyResponse> revoke(
       @RequestHeader(value = "X-Admin-Key", required = false) String adminKey,
-      @PathVariable Long id) {
+      @PathVariable String id) {
     verifyAdmin(adminKey);
     return ResponseEntity.ok(apiKeyService.revoke(id));
   }

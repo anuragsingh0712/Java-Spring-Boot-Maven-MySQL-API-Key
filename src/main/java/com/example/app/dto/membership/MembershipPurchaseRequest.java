@@ -9,10 +9,10 @@ import lombok.Setter;
 public class MembershipPurchaseRequest {
 
   @NotNull(message = "memberId is required")
-  private Long memberId;
+  private String memberId;
 
   @NotNull(message = "planId is required")
-  private Long planId;
+  private String planId;
 
   private String idempotencyKey;
 

@@ -47,7 +47,7 @@ public class WorkoutProgramController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a workout program by id")
-  public ResponseEntity<WorkoutProgramResponse> get(@PathVariable Long id) {
+  public ResponseEntity<WorkoutProgramResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(workoutProgramService.get(id));
   }
 
@@ -55,14 +55,14 @@ public class WorkoutProgramController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','TRAINER')")
   @Operation(summary = "Update a workout program")
   public ResponseEntity<WorkoutProgramResponse> update(
-      @PathVariable Long id, @Valid @RequestBody WorkoutProgramRequest request) {
+      @PathVariable String id, @Valid @RequestBody WorkoutProgramRequest request) {
     return ResponseEntity.ok(workoutProgramService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','TRAINER')")
   @Operation(summary = "Delete a workout program")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
+  public ResponseEntity<Void> delete(@PathVariable String id) {
     workoutProgramService.delete(id);
     return ResponseEntity.noContent().build();
   }

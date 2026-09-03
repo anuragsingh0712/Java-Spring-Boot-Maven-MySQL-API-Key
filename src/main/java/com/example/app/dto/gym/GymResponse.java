@@ -14,7 +14,7 @@ import lombok.Setter;
 @Builder
 public class GymResponse {
 
-  private Long id;
+  private String id;
   private String name;
   private String registrationNumber;
   private String contactEmail;

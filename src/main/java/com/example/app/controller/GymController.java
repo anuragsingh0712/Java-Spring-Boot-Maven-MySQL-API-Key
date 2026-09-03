@@ -46,7 +46,7 @@ public class GymController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a gym by id")
-  public ResponseEntity<GymResponse> get(@PathVariable Long id) {
+  public ResponseEntity<GymResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(gymService.get(id));
   }
 
@@ -54,14 +54,14 @@ public class GymController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN')")
   @Operation(summary = "Update a gym")
   public ResponseEntity<GymResponse> update(
-      @PathVariable Long id, @Valid @RequestBody GymRequest request) {
+      @PathVariable String id, @Valid @RequestBody GymRequest request) {
     return ResponseEntity.ok(gymService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN')")
   @Operation(summary = "Delete a gym")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
+  public ResponseEntity<Void> delete(@PathVariable String id) {
     gymService.delete(id);
     return ResponseEntity.noContent().build();
   }

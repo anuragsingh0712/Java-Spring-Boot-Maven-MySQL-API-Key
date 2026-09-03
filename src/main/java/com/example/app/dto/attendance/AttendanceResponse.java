@@ -15,11 +15,11 @@ import lombok.Setter;
 @Builder
 public class AttendanceResponse {
 
-  private Long id;
-  private Long memberId;
-  private Long branchId;
+  private String id;
+  private String memberId;
+  private String branchId;
   private AttendanceType type;
-  private Long referenceId;
+  private String referenceId;
   private Instant checkInTime;
   private Instant checkOutTime;
 }

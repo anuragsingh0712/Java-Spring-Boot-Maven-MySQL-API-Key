@@ -11,10 +11,10 @@ import lombok.Setter;
 public class WorkoutAssignmentRequest {
 
   @NotNull(message = "workoutProgramId is required")
-  private Long workoutProgramId;
+  private String workoutProgramId;
 
   @NotNull(message = "memberId is required")
-  private Long memberId;
+  private String memberId;
 
   private LocalDate assignedDate;
 

@@ -21,7 +21,7 @@ public class WorkoutProgramRequest {
   @NotNull(message = "level is required")
   private WorkoutLevel level;
 
-  private Long trainerId;
+  private String trainerId;
 
   @NotEmpty(message = "at least one exercise is required")
   @Valid

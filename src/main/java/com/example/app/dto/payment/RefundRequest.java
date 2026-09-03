@@ -11,7 +11,7 @@ import lombok.Setter;
 public class RefundRequest {
 
   @NotNull(message = "paymentId is required")
-  private Long paymentId;
+  private String paymentId;
 
   @NotNull(message = "amount is required")
   @DecimalMin(value = "0.01", message = "amount must be greater than zero")

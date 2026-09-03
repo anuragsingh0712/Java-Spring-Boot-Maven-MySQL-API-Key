@@ -12,10 +12,8 @@ import java.time.Instant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class AttendanceService {
 
   private final AttendanceRepository attendanceRepository;
@@ -31,7 +29,6 @@ public class AttendanceService {
     this.branchService = branchService;
   }
 
-  @Transactional
   public synchronized AttendanceResponse checkIn(CheckInRequest request) {
     // Only active members can check in; blocked/suspended/expired members are rejected.
     Member member = memberService.getServiceEligibleMember(request.getMemberId());
@@ -47,8 +44,8 @@ public class AttendanceService {
 
     Attendance attendance =
         Attendance.builder()
-            .member(member)
-            .branch(branch)
+            .memberId(member.getId())
+            .branchId(branch.getId())
             .type(request.getType())
             .referenceId(request.getReferenceId())
             .checkInTime(Instant.now())
@@ -56,8 +53,7 @@ public class AttendanceService {
     return toResponse(attendanceRepository.save(attendance));
   }
 
-  @Transactional
-  public synchronized AttendanceResponse checkOut(Long memberId) {
+  public synchronized AttendanceResponse checkOut(String memberId) {
     Attendance attendance =
         attendanceRepository
             .findByMemberIdAndCheckOutTimeIsNull(memberId)
@@ -72,15 +68,15 @@ public class AttendanceService {
     return attendanceRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public Page<AttendanceResponse> historyByMember(Long memberId, Pageable pageable) {
+  public Page<AttendanceResponse> historyByMember(String memberId, Pageable pageable) {
     return attendanceRepository.findByMemberId(memberId, pageable).map(this::toResponse);
   }
 
-  public Page<AttendanceResponse> historyByBranch(Long branchId, Pageable pageable) {
+  public Page<AttendanceResponse> historyByBranch(String branchId, Pageable pageable) {
     return attendanceRepository.findByBranchId(branchId, pageable).map(this::toResponse);
   }
 
-  public AttendanceResponse get(Long id) {
+  public AttendanceResponse get(String id) {
     return toResponse(
         attendanceRepository
             .findById(id)
@@ -91,8 +87,8 @@ public class AttendanceService {
   private AttendanceResponse toResponse(Attendance attendance) {
     return AttendanceResponse.builder()
         .id(attendance.getId())
-        .memberId(attendance.getMember().getId())
-        .branchId(attendance.getBranch().getId())
+        .memberId(attendance.getMemberId())
+        .branchId(attendance.getBranchId())
         .type(attendance.getType())
         .referenceId(attendance.getReferenceId())
         .checkInTime(attendance.getCheckInTime())

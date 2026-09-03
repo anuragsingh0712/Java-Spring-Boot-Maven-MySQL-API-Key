@@ -15,7 +15,7 @@ import lombok.Setter;
 @Builder
 public class MemberResponse {
 
-  private Long id;
+  private String id;
   private String firstName;
   private String lastName;
   private String email;
@@ -24,7 +24,7 @@ public class MemberResponse {
   private String address;
   private String emergencyContactName;
   private String emergencyContactPhone;
-  private Long branchId;
+  private String branchId;
   private String branchName;
   private MemberStatus status;
 }

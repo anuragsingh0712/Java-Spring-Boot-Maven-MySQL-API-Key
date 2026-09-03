@@ -44,7 +44,7 @@ public class AttendanceController {
   @PostMapping("/check-out/{memberId}")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST','MEMBER')")
   @Operation(summary = "Check out a member (must correspond to an existing active check-in)")
-  public ResponseEntity<AttendanceResponse> checkOut(@PathVariable Long memberId) {
+  public ResponseEntity<AttendanceResponse> checkOut(@PathVariable String memberId) {
     return ResponseEntity.ok(attendanceService.checkOut(memberId));
   }
 
@@ -57,7 +57,7 @@ public class AttendanceController {
   @GetMapping("/member/{memberId}")
   @Operation(summary = "View a member's attendance history (paginated)")
   public ResponseEntity<PageResponse<AttendanceResponse>> historyByMember(
-      @PathVariable Long memberId, Pageable pageable) {
+      @PathVariable String memberId, Pageable pageable) {
     return ResponseEntity.ok(
         PageResponse.of(attendanceService.historyByMember(memberId, pageable)));
   }
@@ -65,14 +65,14 @@ public class AttendanceController {
   @GetMapping("/branch/{branchId}")
   @Operation(summary = "View a branch's attendance history (paginated)")
   public ResponseEntity<PageResponse<AttendanceResponse>> historyByBranch(
-      @PathVariable Long branchId, Pageable pageable) {
+      @PathVariable String branchId, Pageable pageable) {
     return ResponseEntity.ok(
         PageResponse.of(attendanceService.historyByBranch(branchId, pageable)));
   }
 
   @GetMapping("/{id}")
   @Operation(summary = "Get an attendance record by id")
-  public ResponseEntity<AttendanceResponse> get(@PathVariable Long id) {
+  public ResponseEntity<AttendanceResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(attendanceService.get(id));
   }
 }

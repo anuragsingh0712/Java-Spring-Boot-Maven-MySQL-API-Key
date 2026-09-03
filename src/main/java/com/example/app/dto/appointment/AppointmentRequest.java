@@ -11,13 +11,13 @@ import lombok.Setter;
 public class AppointmentRequest {
 
   @NotNull(message = "memberId is required")
-  private Long memberId;
+  private String memberId;
 
   @NotNull(message = "trainerId is required")
-  private Long trainerId;
+  private String trainerId;
 
   @NotNull(message = "branchId is required")
-  private Long branchId;
+  private String branchId;
 
   @NotNull(message = "startTime is required")
   @FutureOrPresent(message = "startTime must not be in the past")

@@ -46,7 +46,7 @@ public class ApiKeyService {
     return apiKeyRepository.findAll().stream().map(this::toResponse).toList();
   }
 
-  public ApiKeyResponse revoke(Long id) {
+  public ApiKeyResponse revoke(String id) {
     ApiKey apiKey =
         apiKeyRepository
             .findById(id)

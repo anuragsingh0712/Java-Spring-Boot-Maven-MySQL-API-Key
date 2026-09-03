@@ -13,7 +13,7 @@ import lombok.Setter;
 @Builder
 public class ExerciseResponse {
 
-  private Long id;
+  private String id;
   private String name;
   private String category;
   private Integer sets;

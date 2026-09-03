@@ -7,31 +7,28 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
-public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+public interface AppointmentRepository extends MongoRepository<Appointment, String> {
 
   @Query(
-      "select a from Appointment a where a.trainer.id = :trainerId and a.status in :statuses "
-          + "and a.startTime < :endTime and a.endTime > :startTime")
+      "{ 'trainerId': ?0, 'status': { '$in': ?3 }, 'startTime': { '$lt': ?2 }, 'endTime': { '$gt': ?1 } }")
   List<Appointment> findTrainerOverlaps(
-      @Param("trainerId") Long trainerId,
-      @Param("startTime") LocalDateTime startTime,
-      @Param("endTime") LocalDateTime endTime,
-      @Param("statuses") List<AppointmentStatus> statuses);
+      String trainerId,
+      LocalDateTime startTime,
+      LocalDateTime endTime,
+      List<AppointmentStatus> statuses);
 
   @Query(
-      "select a from Appointment a where a.member.id = :memberId and a.status in :statuses "
-          + "and a.startTime < :endTime and a.endTime > :startTime")
+      "{ 'memberId': ?0, 'status': { '$in': ?3 }, 'startTime': { '$lt': ?2 }, 'endTime': { '$gt': ?1 } }")
   List<Appointment> findMemberOverlaps(
-      @Param("memberId") Long memberId,
-      @Param("startTime") LocalDateTime startTime,
-      @Param("endTime") LocalDateTime endTime,
-      @Param("statuses") List<AppointmentStatus> statuses);
+      String memberId,
+      LocalDateTime startTime,
+      LocalDateTime endTime,
+      List<AppointmentStatus> statuses);
 
-  Page<Appointment> findByMemberId(Long memberId, Pageable pageable);
+  Page<Appointment> findByMemberId(String memberId, Pageable pageable);
 
   Optional<Appointment> findByIdempotencyKey(String idempotencyKey);
 }

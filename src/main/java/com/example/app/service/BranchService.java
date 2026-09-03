@@ -10,10 +10,8 @@ import com.example.app.repository.GymRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
 public class BranchService {
 
   private final BranchRepository branchRepository;
@@ -24,7 +22,6 @@ public class BranchService {
     this.gymRepository = gymRepository;
   }
 
-  @Transactional
   public BranchResponse create(BranchRequest request) {
     Gym gym =
         gymRepository
@@ -33,7 +30,7 @@ public class BranchService {
                 () -> new ResourceNotFoundException("Gym not found: " + request.getGymId()));
     Branch branch =
         Branch.builder()
-            .gym(gym)
+            .gymId(gym.getId())
             .name(request.getName())
             .address(request.getAddress())
             .city(request.getCity())
@@ -54,19 +51,18 @@ public class BranchService {
     return branchRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public BranchResponse get(Long id) {
+  public BranchResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  @Transactional
-  public BranchResponse update(Long id, BranchRequest request) {
+  public BranchResponse update(String id, BranchRequest request) {
     Branch branch = findOrThrow(id);
     Gym gym =
         gymRepository
             .findById(request.getGymId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("Gym not found: " + request.getGymId()));
-    branch.setGym(gym);
+    branch.setGymId(gym.getId());
     branch.setName(request.getName());
     branch.setAddress(request.getAddress());
     branch.setCity(request.getCity());
@@ -82,22 +78,23 @@ public class BranchService {
     return toResponse(branchRepository.save(branch));
   }
 
-  @Transactional
-  public void delete(Long id) {
+  public void delete(String id) {
     branchRepository.delete(findOrThrow(id));
   }
 
-  public Branch findOrThrow(Long id) {
+  public Branch findOrThrow(String id) {
     return branchRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Branch not found: " + id));
   }
 
   private BranchResponse toResponse(Branch branch) {
+    String gymName =
+        gymRepository.findById(branch.getGymId()).map(Gym::getName).orElse(null);
     return BranchResponse.builder()
         .id(branch.getId())
-        .gymId(branch.getGym().getId())
-        .gymName(branch.getGym().getName())
+        .gymId(branch.getGymId())
+        .gymName(gymName)
         .name(branch.getName())
         .address(branch.getAddress())
         .city(branch.getCity())

@@ -46,7 +46,7 @@ public class BranchController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a branch by id")
-  public ResponseEntity<BranchResponse> get(@PathVariable Long id) {
+  public ResponseEntity<BranchResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(branchService.get(id));
   }
 
@@ -54,14 +54,14 @@ public class BranchController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER')")
   @Operation(summary = "Update a branch")
   public ResponseEntity<BranchResponse> update(
-      @PathVariable Long id, @Valid @RequestBody BranchRequest request) {
+      @PathVariable String id, @Valid @RequestBody BranchRequest request) {
     return ResponseEntity.ok(branchService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN')")
   @Operation(summary = "Delete a branch")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
+  public ResponseEntity<Void> delete(@PathVariable String id) {
     branchService.delete(id);
     return ResponseEntity.noContent().build();
   }

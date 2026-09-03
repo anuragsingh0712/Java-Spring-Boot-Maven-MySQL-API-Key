@@ -8,7 +8,6 @@ import com.example.app.repository.MembershipPlanRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MembershipPlanService {
@@ -19,7 +18,6 @@ public class MembershipPlanService {
     this.membershipPlanRepository = membershipPlanRepository;
   }
 
-  @Transactional
   public MembershipPlanResponse create(MembershipPlanRequest request) {
     MembershipPlan plan =
         MembershipPlan.builder()
@@ -37,12 +35,11 @@ public class MembershipPlanService {
     return membershipPlanRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public MembershipPlanResponse get(Long id) {
+  public MembershipPlanResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  @Transactional
-  public MembershipPlanResponse update(Long id, MembershipPlanRequest request) {
+  public MembershipPlanResponse update(String id, MembershipPlanRequest request) {
     MembershipPlan plan = findOrThrow(id);
     plan.setName(request.getName());
     plan.setType(request.getType());
@@ -55,12 +52,11 @@ public class MembershipPlanService {
     return toResponse(membershipPlanRepository.save(plan));
   }
 
-  @Transactional
-  public void delete(Long id) {
+  public void delete(String id) {
     membershipPlanRepository.delete(findOrThrow(id));
   }
 
-  public MembershipPlan findOrThrow(Long id) {
+  public MembershipPlan findOrThrow(String id) {
     return membershipPlanRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Membership plan not found: " + id));

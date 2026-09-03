@@ -28,7 +28,7 @@ public class NotificationController {
   @GetMapping
   @Operation(summary = "List notifications (optionally filtered by memberId, paginated)")
   public ResponseEntity<PageResponse<NotificationResponse>> list(
-      @RequestParam(required = false) Long memberId, Pageable pageable) {
+      @RequestParam(required = false) String memberId, Pageable pageable) {
     if (memberId != null) {
       return ResponseEntity.ok(
           PageResponse.of(notificationService.listByMember(memberId, pageable)));
@@ -38,7 +38,7 @@ public class NotificationController {
 
   @PutMapping("/{id}/read")
   @Operation(summary = "Mark a notification as read")
-  public ResponseEntity<NotificationResponse> markRead(@PathVariable Long id) {
+  public ResponseEntity<NotificationResponse> markRead(@PathVariable String id) {
     return ResponseEntity.ok(notificationService.markRead(id));
   }
 }

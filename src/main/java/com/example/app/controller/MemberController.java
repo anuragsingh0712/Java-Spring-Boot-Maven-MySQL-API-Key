@@ -46,7 +46,7 @@ public class MemberController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a member by id")
-  public ResponseEntity<MemberResponse> get(@PathVariable Long id) {
+  public ResponseEntity<MemberResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(memberService.get(id));
   }
 
@@ -54,14 +54,14 @@ public class MemberController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN','BRANCH_MANAGER','RECEPTIONIST')")
   @Operation(summary = "Update a member")
   public ResponseEntity<MemberResponse> update(
-      @PathVariable Long id, @Valid @RequestBody MemberRequest request) {
+      @PathVariable String id, @Valid @RequestBody MemberRequest request) {
     return ResponseEntity.ok(memberService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN')")
   @Operation(summary = "Delete a member")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
+  public ResponseEntity<Void> delete(@PathVariable String id) {
     memberService.delete(id);
     return ResponseEntity.noContent().build();
   }

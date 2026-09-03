@@ -10,13 +10,13 @@ import lombok.Setter;
 public class CheckInRequest {
 
   @NotNull(message = "memberId is required")
-  private Long memberId;
+  private String memberId;
 
   @NotNull(message = "branchId is required")
-  private Long branchId;
+  private String branchId;
 
   @NotNull(message = "type is required")
   private AttendanceType type;
 
-  private Long referenceId;
+  private String referenceId;
 }

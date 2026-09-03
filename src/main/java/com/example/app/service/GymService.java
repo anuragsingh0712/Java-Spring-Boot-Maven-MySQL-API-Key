@@ -3,23 +3,25 @@ package com.example.app.service;
 import com.example.app.dto.gym.GymRequest;
 import com.example.app.dto.gym.GymResponse;
 import com.example.app.entity.Gym;
+import com.example.app.exception.BusinessRuleException;
 import com.example.app.exception.ResourceNotFoundException;
+import com.example.app.repository.BranchRepository;
 import com.example.app.repository.GymRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GymService {
 
   private final GymRepository gymRepository;
+  private final BranchRepository branchRepository;
 
-  public GymService(GymRepository gymRepository) {
+  public GymService(GymRepository gymRepository, BranchRepository branchRepository) {
     this.gymRepository = gymRepository;
+    this.branchRepository = branchRepository;
   }
 
-  @Transactional
   public GymResponse create(GymRequest request) {
     Gym gym =
         Gym.builder()
@@ -36,12 +38,11 @@ public class GymService {
     return gymRepository.findAll(pageable).map(this::toResponse);
   }
 
-  public GymResponse get(Long id) {
+  public GymResponse get(String id) {
     return toResponse(findOrThrow(id));
   }
 
-  @Transactional
-  public GymResponse update(Long id, GymRequest request) {
+  public GymResponse update(String id, GymRequest request) {
     Gym gym = findOrThrow(id);
     gym.setName(request.getName());
     gym.setRegistrationNumber(request.getRegistrationNumber());
@@ -51,13 +52,16 @@ public class GymService {
     return toResponse(gymRepository.save(gym));
   }
 
-  @Transactional
-  public void delete(Long id) {
+  public void delete(String id) {
     Gym gym = findOrThrow(id);
+    if (branchRepository.existsByGymId(gym.getId())) {
+      throw new BusinessRuleException(
+          "Cannot delete gym with existing branches: " + id);
+    }
     gymRepository.delete(gym);
   }
 
-  private Gym findOrThrow(Long id) {
+  private Gym findOrThrow(String id) {
     return gymRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Gym not found: " + id));

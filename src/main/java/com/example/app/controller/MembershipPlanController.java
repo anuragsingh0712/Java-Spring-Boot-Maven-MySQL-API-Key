@@ -47,7 +47,7 @@ public class MembershipPlanController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get a membership plan by id")
-  public ResponseEntity<MembershipPlanResponse> get(@PathVariable Long id) {
+  public ResponseEntity<MembershipPlanResponse> get(@PathVariable String id) {
     return ResponseEntity.ok(membershipPlanService.get(id));
   }
 
@@ -55,14 +55,14 @@ public class MembershipPlanController {
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN')")
   @Operation(summary = "Update a membership plan")
   public ResponseEntity<MembershipPlanResponse> update(
-      @PathVariable Long id, @Valid @RequestBody MembershipPlanRequest request) {
+      @PathVariable String id, @Valid @RequestBody MembershipPlanRequest request) {
     return ResponseEntity.ok(membershipPlanService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('SUPER_ADMIN','GYM_ADMIN')")
   @Operation(summary = "Delete a membership plan")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
+  public ResponseEntity<Void> delete(@PathVariable String id) {
     membershipPlanService.delete(id);
     return ResponseEntity.noContent().build();
   }

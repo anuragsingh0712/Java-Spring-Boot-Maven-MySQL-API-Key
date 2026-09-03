@@ -5,11 +5,11 @@ import com.example.app.entity.MembershipStatus;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface MembershipRepository extends JpaRepository<Membership, Long> {
+public interface MembershipRepository extends MongoRepository<Membership, String> {
 
-  List<Membership> findByMemberIdAndStatusIn(Long memberId, List<MembershipStatus> statuses);
+  List<Membership> findByMemberIdAndStatusIn(String memberId, List<MembershipStatus> statuses);
 
-  Page<Membership> findByMemberId(Long memberId, Pageable pageable);
+  Page<Membership> findByMemberId(String memberId, Pageable pageable);
 }

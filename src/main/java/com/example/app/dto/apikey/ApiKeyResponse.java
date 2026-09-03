@@ -16,7 +16,7 @@ import lombok.Setter;
 @Builder
 public class ApiKeyResponse {
 
-  private Long id;
+  private String id;
   private String name;
   private ApiRole role;
   private ApiKeyStatus status;
