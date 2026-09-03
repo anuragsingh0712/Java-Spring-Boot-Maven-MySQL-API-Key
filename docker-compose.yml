@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "26872:26872"
+    environment:
+      SERVER_PORT: "26872"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/gen_4ebfb703822e?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      SPRING_DATASOURCE_USERNAME: "myuser"
+      SPRING_DATASOURCE_PASSWORD: "mypassword"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: "gen_4ebfb703822e"
+      MYSQL_USER: "myuser"
+      MYSQL_PASSWORD: "mypassword"
+      MYSQL_ROOT_PASSWORD: "rootpassword"
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
