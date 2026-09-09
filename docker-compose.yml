@@ -9,7 +9,7 @@ services:
       - "29586:29586"
     environment:
       SERVER_PORT: "29586"
-      DB_URL: "jdbc:postgresql://db:5432/gen_8c72c02afb70"
+      DB_URL: "jdbc:oracle:thin:@db:1521/FREEPDB1"
       DB_USERNAME: "myuser"
       DB_PASSWORD: "mypassword"
     depends_on:
@@ -18,17 +18,17 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:16
+    image: gvenzl/oracle-free:23-slim
     ports:
-      - "5432:5432"
+      - "1521:1521"
     environment:
-      POSTGRES_DB: "gen_8c72c02afb70"
-      POSTGRES_USER: "myuser"
-      POSTGRES_PASSWORD: "mypassword"
+      ORACLE_PASSWORD: "mypassword"
+      APP_USER: "myuser"
+      APP_USER_PASSWORD: "mypassword"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data:/opt/oracle/oradata
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d gen_8c72c02afb70"]
+      test: ["CMD", "healthcheck.sh"]
       interval: 10s
       timeout: 5s
       retries: 10

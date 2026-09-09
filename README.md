@@ -8,18 +8,18 @@ attendance, payments/billing, and notifications.
 
 - Java 21, Spring Boot 3.2.5, Maven
 - Spring Web, Spring Data JPA (Hibernate), Spring Security
-- PostgreSQL (Hibernate auto-DDL via `spring.jpa.hibernate.ddl-auto=update`)
+- Oracle Database (Hibernate auto-DDL via `spring.jpa.hibernate.ddl-auto=update`)
 - Jakarta Bean Validation
 - springdoc-openapi (Swagger UI)
 - Spring WebSocket (STOMP) for live notification broadcast
 - API Key authentication (`X-API-Key` header) with role-based authorization
 
-Architecture: `Controller -> Service -> Repository -> PostgreSQL`, single deployable JAR.
+Architecture: `Controller -> Service -> Repository -> Oracle`, single deployable JAR.
 No microservices, no message brokers, no distributed components.
 
 ## Running locally
 
-Prerequisites: JDK 21, Maven, a reachable PostgreSQL instance matching `application.properties`.
+Prerequisites: JDK 21, Maven, a reachable Oracle instance matching `application.properties`.
 
 ```bash
 chmod +x start.sh
@@ -38,7 +38,7 @@ On Windows: `start.bat`.
 docker compose up --build
 ```
 
-This starts the app (port 29586) and a PostgreSQL 16 container together.
+This starts the app (port 29586) and an Oracle Database Free (23c) container together.
 
 ## Configuration
 
@@ -47,7 +47,7 @@ Key properties in `src/main/resources/application.properties`:
 | Property | Purpose |
 |---|---|
 | `server.port` | `29586` |
-| `spring.datasource.url/username/password` | PostgreSQL connection |
+| `spring.datasource.url/username/password` | Oracle connection |
 | `spring.jpa.hibernate.ddl-auto` | `update` (Hibernate owns the schema) |
 | `springdoc.swagger-ui.path` | `/docs` |
 | `springdoc.api-docs.path` | `/api-docs` |
@@ -138,7 +138,7 @@ Idempotency: `Idempotency-Key` header (or body field) supported on `POST /paymen
 Automated endpoint verification was performed with `curl` against a running instance
 (see `/api_tests/test_results.md` and `/api_test_report.xlsx` for the full pass/fail
 matrix). The project also ships with `spring-boot-starter-test`, `spring-security-test`,
-and Testcontainers (PostgreSQL) dependencies pre-wired in `pom.xml` for teams that want to
+and Testcontainers (Oracle) dependencies pre-wired in `pom.xml` for teams that want to
 add JUnit 5/Mockito/Testcontainers integration tests going forward
 (`mvn test`, requires a Docker daemon for Testcontainers).
 
@@ -147,7 +147,7 @@ add JUnit 5/Mockito/Testcontainers integration tests going forward
 | Variable | Default | Purpose |
 |---|---|---|
 | `SERVER_PORT` | `29586` | Overrides `server.port` at launch (start.sh/start.bat/Docker) |
-| `DB_URL` | `jdbc:postgresql://localhost:5432/gen_8c72c02afb70` | Overrides `spring.datasource.url` |
+| `DB_URL` | `jdbc:oracle:thin:@localhost:1521/FREEPDB1` | Overrides `spring.datasource.url` |
 | `DB_USERNAME` | `myuser` | Overrides `spring.datasource.username` |
 | `DB_PASSWORD` | `mypassword` | Overrides `spring.datasource.password` |
 

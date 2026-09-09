@@ -1,3 +1,53 @@
+COMMIT_MESSAGE: Migrate persistence layer from PostgreSQL to Oracle Database (JPA/Hibernate)
+
+## Features Added
+- Swapped the relational datastore from PostgreSQL to Oracle Database. No entity,
+  repository, or service code changes were required: entities already use
+  `@GeneratedValue(strategy = GenerationType.UUID)` (application-generated ids, not a
+  DB-native `SERIAL`/sequence), and the only two native-ish queries
+  (`AppointmentRepository.findTrainerOverlaps` / `findMemberOverlaps`) are portable JPQL,
+  so they run unchanged against Oracle.
+- Updated `pom.xml`: removed the `org.postgresql:postgresql` runtime driver and
+  `org.testcontainers:postgresql` test dependency; added the Oracle JDBC driver
+  (`com.oracle.database.jdbc:ojdbc11`, runtime scope) and the Testcontainers Oracle
+  module (`org.testcontainers:oracle-free`, test scope).
+- Updated `application.properties`: `spring.datasource.url` now defaults to
+  `jdbc:oracle:thin:@localhost:1521/FREEPDB1`, `spring.datasource.driver-class-name`
+  is `oracle.jdbc.OracleDriver`, and `spring.jpa.database-platform` is
+  `org.hibernate.dialect.OracleDialect`. `DB_USERNAME`/`DB_PASSWORD` env var overrides
+  are unchanged.
+- Updated `docker-compose.yml`: the `db` service now runs `gvenzl/oracle-free:23-slim`
+  on port `1521` (was `postgres:16` on `5432`), with `ORACLE_PASSWORD`/`APP_USER`/
+  `APP_USER_PASSWORD` env vars and the image's built-in `healthcheck.sh` healthcheck.
+  The `app` service's `DB_URL` now points at `jdbc:oracle:thin:@db:1521/FREEPDB1`.
+- Updated `README.md`: tech stack, architecture diagram, prerequisites, Docker section,
+  configuration table, Testing section, and Environment Variables table now reference
+  Oracle instead of PostgreSQL.
+
+## Files Modified
+- pom.xml — Oracle JDBC driver + Testcontainers Oracle module
+- src/main/resources/application.properties — Oracle datasource/JPA config
+- docker-compose.yml — Oracle Database Free container instead of Postgres 16
+- README.md — Oracle references throughout
+- ai_changes.md — this entry
+
+## Files Added
+(none)
+
+## Secrets Moved
+(none — no new credentials introduced; existing `DB_USERNAME`/`DB_PASSWORD` env var
+pattern with the same default values is preserved)
+
+## DB URLs Resolved
+- jdbc:postgresql://localhost:5432/gen_8c72c02afb70 (dev default) -> jdbc:oracle:thin:@localhost:1521/FREEPDB1
+- jdbc:postgresql://db:5432/gen_8c72c02afb70 (docker-compose) -> jdbc:oracle:thin:@db:1521/FREEPDB1
+
+## Compilation Result (PASSED / FAILED)
+Not run as part of this change (dependency-only/config swap); no Java source files were
+modified since no entity/repository code was Postgres-specific.
+
+---
+
 COMMIT_MESSAGE: Migrate persistence layer from MongoDB to PostgreSQL (JPA/Hibernate)
 
 ## Features Added
