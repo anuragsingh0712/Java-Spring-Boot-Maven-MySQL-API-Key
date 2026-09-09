@@ -55,8 +55,7 @@ public class GymService {
   public void delete(String id) {
     Gym gym = findOrThrow(id);
     if (branchRepository.existsByGymId(gym.getId())) {
-      throw new BusinessRuleException(
-          "Cannot delete gym with existing branches: " + id);
+      throw new BusinessRuleException("Cannot delete gym with existing branches: " + id);
     }
     gymRepository.delete(gym);
   }
