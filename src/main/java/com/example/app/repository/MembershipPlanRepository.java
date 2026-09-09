@@ -1,6 +1,6 @@
 package com.example.app.repository;
 
 import com.example.app.entity.MembershipPlan;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MembershipPlanRepository extends MongoRepository<MembershipPlan, String> {}
+public interface MembershipPlanRepository extends JpaRepository<MembershipPlan, String> {}

@@ -7,13 +7,14 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
-public interface AppointmentRepository extends MongoRepository<Appointment, String> {
+public interface AppointmentRepository extends JpaRepository<Appointment, String> {
 
   @Query(
-      "{ 'trainerId': ?0, 'status': { '$in': ?3 }, 'startTime': { '$lt': ?2 }, 'endTime': { '$gt': ?1 } }")
+      "SELECT a FROM Appointment a WHERE a.trainerId = ?1 AND a.status IN ?4 "
+          + "AND a.startTime < ?3 AND a.endTime > ?2")
   List<Appointment> findTrainerOverlaps(
       String trainerId,
       LocalDateTime startTime,
@@ -21,7 +22,8 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
       List<AppointmentStatus> statuses);
 
   @Query(
-      "{ 'memberId': ?0, 'status': { '$in': ?3 }, 'startTime': { '$lt': ?2 }, 'endTime': { '$gt': ?1 } }")
+      "SELECT a FROM Appointment a WHERE a.memberId = ?1 AND a.status IN ?4 "
+          + "AND a.startTime < ?3 AND a.endTime > ?2")
   List<Appointment> findMemberOverlaps(
       String memberId,
       LocalDateTime startTime,

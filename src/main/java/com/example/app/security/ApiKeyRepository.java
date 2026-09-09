@@ -1,9 +1,9 @@
 package com.example.app.security;
 
 import java.util.Optional;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ApiKeyRepository extends MongoRepository<ApiKey, String> {
+public interface ApiKeyRepository extends JpaRepository<ApiKey, String> {
 
   Optional<ApiKey> findByKeyHash(String keyHash);
 }

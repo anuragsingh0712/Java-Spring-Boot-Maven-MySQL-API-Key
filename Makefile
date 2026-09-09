@@ -7,7 +7,7 @@ package:
 	mvn package -DskipTests -q
 
 run: package
-	SERVER_PORT=$${SERVER_PORT:-26872} bash start.sh
+	SERVER_PORT=$${SERVER_PORT:-29586} bash start.sh
 
 test:
 	mvn test -q

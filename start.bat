@@ -1,5 +1,5 @@
 @echo off
-if not defined SERVER_PORT set SERVER_PORT=26872
+if not defined SERVER_PORT set SERVER_PORT=29586
 
 echo Building application...
 call mvn package -DskipTests -q

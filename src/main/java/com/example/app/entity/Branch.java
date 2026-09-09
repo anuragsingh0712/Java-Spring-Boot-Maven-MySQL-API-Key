@@ -1,5 +1,13 @@
 package com.example.app.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import java.time.LocalTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,11 +15,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "branches")
+@Entity
+@Table(name = "branches", indexes = @Index(name = "idx_branches_gym_id", columnList = "gymId"))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,9 +27,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Branch extends BaseAuditEntity {
 
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
 
-  @Indexed
   private String gymId;
 
   private String name;
@@ -48,5 +54,6 @@ public class Branch extends BaseAuditEntity {
 
   private String managerContact;
 
+  @Enumerated(EnumType.STRING)
   private BranchStatus status;
 }

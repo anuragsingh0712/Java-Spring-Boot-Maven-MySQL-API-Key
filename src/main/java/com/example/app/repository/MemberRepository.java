@@ -2,9 +2,9 @@ package com.example.app.repository;
 
 import com.example.app.entity.Member;
 import java.util.Optional;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MemberRepository extends MongoRepository<Member, String> {
+public interface MemberRepository extends JpaRepository<Member, String> {
 
   Optional<Member> findByEmail(String email);
 }

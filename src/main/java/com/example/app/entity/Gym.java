@@ -1,16 +1,20 @@
 package com.example.app.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "gyms")
+@Entity
+@Table(name = "gyms")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,11 +24,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Gym extends BaseAuditEntity {
 
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
 
   private String name;
 
-  @Indexed(unique = true, sparse = true)
+  @Column(unique = true)
   private String registrationNumber;
 
   private String contactEmail;

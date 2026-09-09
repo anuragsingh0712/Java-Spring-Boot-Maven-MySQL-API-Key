@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-SERVER_PORT="${SERVER_PORT:-26872}"
+SERVER_PORT="${SERVER_PORT:-29586}"
 
 echo "Building application..."
 mvn package -DskipTests -q

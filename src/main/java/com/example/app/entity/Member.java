@@ -1,5 +1,13 @@
 package com.example.app.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,11 +15,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "members")
+@Entity
+@Table(name = "members")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,13 +27,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Member extends BaseAuditEntity {
 
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
 
   private String firstName;
 
   private String lastName;
 
-  @Indexed(unique = true)
+  @Column(unique = true)
   private String email;
 
   private String phone;
@@ -40,9 +47,10 @@ public class Member extends BaseAuditEntity {
 
   private String emergencyContactPhone;
 
-  // Branch now lives in MongoDB (see Branch document); stored here as a plain
-  // reference id since cross-store JPA relationships are not supported.
+  // Branch reference stored as a plain id column (no JPA relationship mapping),
+  // matching the pre-existing cross-aggregate reference style.
   private String branchId;
 
+  @Enumerated(EnumType.STRING)
   private MemberStatus status;
 }

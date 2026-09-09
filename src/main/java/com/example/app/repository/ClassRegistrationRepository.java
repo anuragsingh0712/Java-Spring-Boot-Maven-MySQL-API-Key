@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ClassRegistrationRepository extends MongoRepository<ClassRegistration, String> {
+public interface ClassRegistrationRepository extends JpaRepository<ClassRegistration, String> {
 
   Optional<ClassRegistration> findByFitnessClassIdAndMemberIdAndStatusIn(
       String fitnessClassId, String memberId, List<RegistrationStatus> statuses);

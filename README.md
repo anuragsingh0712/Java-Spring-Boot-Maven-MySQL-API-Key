@@ -8,27 +8,27 @@ attendance, payments/billing, and notifications.
 
 - Java 21, Spring Boot 3.2.5, Maven
 - Spring Web, Spring Data JPA (Hibernate), Spring Security
-- MySQL 8 + Flyway (schema-as-migrations, no Hibernate auto-DDL)
+- PostgreSQL (Hibernate auto-DDL via `spring.jpa.hibernate.ddl-auto=update`)
 - Jakarta Bean Validation
 - springdoc-openapi (Swagger UI)
 - Spring WebSocket (STOMP) for live notification broadcast
 - API Key authentication (`X-API-Key` header) with role-based authorization
 
-Architecture: `Controller -> Service -> Repository -> MySQL`, single deployable JAR.
+Architecture: `Controller -> Service -> Repository -> PostgreSQL`, single deployable JAR.
 No microservices, no message brokers, no distributed components.
 
 ## Running locally
 
-Prerequisites: JDK 21, Maven, a reachable MySQL instance matching `application.properties`.
+Prerequisites: JDK 21, Maven, a reachable PostgreSQL instance matching `application.properties`.
 
 ```bash
 chmod +x start.sh
-SERVER_PORT=26872 ./start.sh
+SERVER_PORT=29586 ./start.sh
 ```
 
-This builds the jar (`mvn package -DskipTests`) and starts it on port `26872`
-(override with `SERVER_PORT`). Flyway automatically creates the schema and seeds
-demo data on first boot.
+This builds the jar (`mvn package -DskipTests`) and starts it on port `29586`
+(override with `SERVER_PORT`). Hibernate automatically creates/updates the schema
+on first boot (`spring.jpa.hibernate.ddl-auto=update`).
 
 On Windows: `start.bat`.
 
@@ -38,7 +38,7 @@ On Windows: `start.bat`.
 docker compose up --build
 ```
 
-This starts the app (port 26872) and a MySQL 8 container together.
+This starts the app (port 29586) and a PostgreSQL 16 container together.
 
 ## Configuration
 
@@ -46,10 +46,9 @@ Key properties in `src/main/resources/application.properties`:
 
 | Property | Purpose |
 |---|---|
-| `server.port` | `26872` |
-| `spring.datasource.url/username/password` | MySQL connection |
-| `spring.jpa.hibernate.ddl-auto` | `validate` (Flyway owns the schema) |
-| `spring.flyway.locations` | `classpath:db/migration` |
+| `server.port` | `29586` |
+| `spring.datasource.url/username/password` | PostgreSQL connection |
+| `spring.jpa.hibernate.ddl-auto` | `update` (Hibernate owns the schema) |
 | `springdoc.swagger-ui.path` | `/docs` |
 | `springdoc.api-docs.path` | `/api-docs` |
 | `admin.api-key` | Bootstrap secret required to mint/list/revoke API keys |
@@ -75,7 +74,7 @@ Key management (`/api/v1/api-keys/**`) is gated by a separate `X-Admin-Key` head
 ```bash
 ADMIN_KEY=$(grep '^admin.api-key=' src/main/resources/application.properties | cut -d'=' -f2)
 
-curl -X POST http://localhost:26872/api/v1/api-keys \
+curl -X POST http://localhost:29586/api/v1/api-keys \
   -H "Content-Type: application/json" \
   -H "X-Admin-Key: $ADMIN_KEY" \
   -d '{"name":"demo-super-admin"}'
@@ -86,10 +85,10 @@ The response's `apiKey` field is shown **once** — store it securely. Use it as
 
 ## API Documentation
 
-- Swagger UI: `http://localhost:26872/docs`
-- OpenAPI JSON: `http://localhost:26872/api-docs`
-- Health check: `http://localhost:26872/actuator/health`
-- WebSocket (STOMP over SockJS) endpoint for live notifications: `ws://localhost:26872/ws`,
+- Swagger UI: `http://localhost:29586/docs`
+- OpenAPI JSON: `http://localhost:29586/api-docs`
+- Health check: `http://localhost:29586/actuator/health`
+- WebSocket (STOMP over SockJS) endpoint for live notifications: `ws://localhost:29586/ws`,
   topic `/topic/notifications`
 
 ## Endpoints (prefix `/api/v1`, offset pagination via `page`/`size`, default size 20)
@@ -139,7 +138,7 @@ Idempotency: `Idempotency-Key` header (or body field) supported on `POST /paymen
 Automated endpoint verification was performed with `curl` against a running instance
 (see `/api_tests/test_results.md` and `/api_test_report.xlsx` for the full pass/fail
 matrix). The project also ships with `spring-boot-starter-test`, `spring-security-test`,
-and Testcontainers (MySQL) dependencies pre-wired in `pom.xml` for teams that want to
+and Testcontainers (PostgreSQL) dependencies pre-wired in `pom.xml` for teams that want to
 add JUnit 5/Mockito/Testcontainers integration tests going forward
 (`mvn test`, requires a Docker daemon for Testcontainers).
 
@@ -147,7 +146,10 @@ add JUnit 5/Mockito/Testcontainers integration tests going forward
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `SERVER_PORT` | `26872` | Overrides `server.port` at launch (start.sh/start.bat/Docker) |
+| `SERVER_PORT` | `29586` | Overrides `server.port` at launch (start.sh/start.bat/Docker) |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/gen_8c72c02afb70` | Overrides `spring.datasource.url` |
+| `DB_USERNAME` | `myuser` | Overrides `spring.datasource.username` |
+| `DB_PASSWORD` | `mypassword` | Overrides `spring.datasource.password` |
 
 ## Project Structure
 

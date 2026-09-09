@@ -1,6 +1,6 @@
 package com.example.app.repository;
 
 import com.example.app.entity.Trainer;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TrainerRepository extends MongoRepository<Trainer, String> {}
+public interface TrainerRepository extends JpaRepository<Trainer, String> {}

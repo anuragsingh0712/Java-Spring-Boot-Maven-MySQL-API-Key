@@ -6,23 +6,29 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "26872:26872"
+      - "29586:29586"
     environment:
-      SERVER_PORT: "26872"
-      SPRING_DATA_MONGODB_URI: "mongodb://db:27017/gen_4ebfb703822e"
+      SERVER_PORT: "29586"
+      DB_URL: "jdbc:postgresql://db:5432/gen_8c72c02afb70"
+      DB_USERNAME: "myuser"
+      DB_PASSWORD: "mypassword"
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
 
   db:
-    image: mongo:7.0
+    image: postgres:16
     ports:
-      - "27017:27017"
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "gen_8c72c02afb70"
+      POSTGRES_USER: "myuser"
+      POSTGRES_PASSWORD: "mypassword"
     volumes:
-      - db_data:/data/db
+      - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      test: ["CMD-SHELL", "pg_isready -U myuser -d gen_8c72c02afb70"]
       interval: 10s
       timeout: 5s
       retries: 10

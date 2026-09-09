@@ -1,5 +1,12 @@
 package com.example.app.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,10 +14,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "workout_assignments")
+@Entity
+@Table(name = "workout_assignments")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +25,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @ToString
 public class WorkoutAssignment extends BaseAuditEntity {
 
-  @Id private String id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private String id;
 
   private String workoutProgramId;
 
@@ -27,6 +35,7 @@ public class WorkoutAssignment extends BaseAuditEntity {
 
   private LocalDate assignedDate;
 
+  @Enumerated(EnumType.STRING)
   private WorkoutAssignmentStatus status;
 
   private String progressNotes;
