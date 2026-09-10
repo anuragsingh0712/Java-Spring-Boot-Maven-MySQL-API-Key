@@ -13,7 +13,8 @@ import org.springframework.data.mongodb.repository.Query;
 public interface AppointmentRepository extends MongoRepository<Appointment, String> {
 
   @Query(
-      "{ 'trainerId': ?0, 'status': { '$in': ?3 }, 'startTime': { '$lt': ?2 }, 'endTime': { '$gt': ?1 } }")
+      "{ 'trainerId': ?0, 'status': { '$in': ?3 }, 'startTime': { '$lt': ?2 }, 'endTime': { '$gt':"
+          + " ?1 } }")
   List<Appointment> findTrainerOverlaps(
       String trainerId,
       LocalDateTime startTime,
@@ -21,7 +22,8 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
       List<AppointmentStatus> statuses);
 
   @Query(
-      "{ 'memberId': ?0, 'status': { '$in': ?3 }, 'startTime': { '$lt': ?2 }, 'endTime': { '$gt': ?1 } }")
+      "{ 'memberId': ?0, 'status': { '$in': ?3 }, 'startTime': { '$lt': ?2 }, 'endTime': { '$gt':"
+          + " ?1 } }")
   List<Appointment> findMemberOverlaps(
       String memberId,
       LocalDateTime startTime,

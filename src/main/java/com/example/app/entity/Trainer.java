@@ -19,8 +19,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @ToString(exclude = "branch")
 public class Trainer extends BaseAuditEntity {
 
-  @Id
-  private String id;
+  @Id private String id;
 
   private String firstName;
 

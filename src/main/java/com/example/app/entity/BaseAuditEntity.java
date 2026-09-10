@@ -10,9 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 @Setter
 public abstract class BaseAuditEntity {
 
-  @CreatedDate
-  private Instant createdAt;
+  @CreatedDate private Instant createdAt;
 
-  @LastModifiedDate
-  private Instant updatedAt;
+  @LastModifiedDate private Instant updatedAt;
 }

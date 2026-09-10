@@ -89,8 +89,7 @@ public class BranchService {
   }
 
   private BranchResponse toResponse(Branch branch) {
-    String gymName =
-        gymRepository.findById(branch.getGymId()).map(Gym::getName).orElse(null);
+    String gymName = gymRepository.findById(branch.getGymId()).map(Gym::getName).orElse(null);
     return BranchResponse.builder()
         .id(branch.getId())
         .gymId(branch.getGymId())

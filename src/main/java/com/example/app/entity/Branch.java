@@ -20,11 +20,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @ToString
 public class Branch extends BaseAuditEntity {
 
-  @Id
-  private String id;
+  @Id private String id;
 
-  @Indexed
-  private String gymId;
+  @Indexed private String gymId;
 
   private String name;
 

@@ -18,8 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 public class ApiKey {
 
-  @Id
-  private String id;
+  @Id private String id;
 
   @Indexed(unique = true)
   private String keyHash;
