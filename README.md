@@ -7,28 +7,28 @@ attendance, payments/billing, and notifications.
 ## Tech Stack
 
 - Java 21, Spring Boot 3.2.5, Maven
-- Spring Web, Spring Data JPA (Hibernate), Spring Security
-- MySQL 8 + Flyway (schema-as-migrations, no Hibernate auto-DDL)
+- Spring Web, Spring Data MongoDB, Spring Security
+- MongoDB 7 (document store, no Hibernate/JPA, no Flyway migrations)
 - Jakarta Bean Validation
 - springdoc-openapi (Swagger UI)
 - Spring WebSocket (STOMP) for live notification broadcast
 - API Key authentication (`X-API-Key` header) with role-based authorization
 
-Architecture: `Controller -> Service -> Repository -> MySQL`, single deployable JAR.
+Architecture: `Controller -> Service -> Repository -> MongoDB`, single deployable JAR.
 No microservices, no message brokers, no distributed components.
 
 ## Running locally
 
-Prerequisites: JDK 21, Maven, a reachable MySQL instance matching `application.properties`.
+Prerequisites: JDK 21, Maven, a reachable MongoDB instance matching `application.properties`.
 
 ```bash
 chmod +x start.sh
-SERVER_PORT=26872 ./start.sh
+SERVER_PORT=29738 ./start.sh
 ```
 
-This builds the jar (`mvn package -DskipTests`) and starts it on port `26872`
-(override with `SERVER_PORT`). Flyway automatically creates the schema and seeds
-demo data on first boot.
+This builds the jar (`mvn package -DskipTests`) and starts it on port `29738`
+(override with `SERVER_PORT`). Spring Data MongoDB creates collections/indexes on
+first use (`spring.data.mongodb.auto-index-creation=true`).
 
 On Windows: `start.bat`.
 
@@ -38,7 +38,7 @@ On Windows: `start.bat`.
 docker compose up --build
 ```
 
-This starts the app (port 26872) and a MySQL 8 container together.
+This starts the app (port 29738) and a MongoDB 7 container together.
 
 ## Configuration
 
@@ -46,13 +46,19 @@ Key properties in `src/main/resources/application.properties`:
 
 | Property | Purpose |
 |---|---|
-| `server.port` | `26872` |
-| `spring.datasource.url/username/password` | MySQL connection |
-| `spring.jpa.hibernate.ddl-auto` | `validate` (Flyway owns the schema) |
-| `spring.flyway.locations` | `classpath:db/migration` |
+| `server.port` | `29738` (override with `SERVER_PORT` env var) |
+| `spring.data.mongodb.uri` | MongoDB connection string (override with `SPRING_DATA_MONGODB_URI`) |
+| `spring.data.mongodb.auto-index-creation` | `true` (creates unique/secondary indexes declared on documents) |
 | `springdoc.swagger-ui.path` | `/docs` |
 | `springdoc.api-docs.path` | `/api-docs` |
-| `admin.api-key` | Bootstrap secret required to mint/list/revoke API keys |
+| `admin.api-key` | Bootstrap secret required to mint/list/revoke API keys (override with `ADMIN_API_KEY`) |
+
+Data consistency note: the target MongoDB instance runs as a standalone node (not a
+replica set), so native multi-document ACID transactions/`@Transactional` are not
+available. Multi-step flows (membership purchase, payment/refund, etc.) preserve
+consistency through validate-then-write ordering and unique indexes instead. If deployed
+against a MongoDB replica set, a `MongoTransactionManager` bean can be added to restore
+full `@Transactional` support.
 
 ## Authentication
 
@@ -75,7 +81,7 @@ Key management (`/api/v1/api-keys/**`) is gated by a separate `X-Admin-Key` head
 ```bash
 ADMIN_KEY=$(grep '^admin.api-key=' src/main/resources/application.properties | cut -d'=' -f2)
 
-curl -X POST http://localhost:26872/api/v1/api-keys \
+curl -X POST http://localhost:29738/api/v1/api-keys \
   -H "Content-Type: application/json" \
   -H "X-Admin-Key: $ADMIN_KEY" \
   -d '{"name":"demo-super-admin"}'
@@ -128,7 +134,7 @@ Idempotency: `Idempotency-Key` header (or body field) supported on `POST /paymen
   promoted (FIFO) when a confirmed registration is cancelled.
 - Membership purchase/renewal: membership starts `PENDING`, payment is processed,
   and only a `SUCCESS` payment activates/extends the membership — failures leave
-  the membership `PENDING` with no partial/inconsistent state (`@Transactional`).
+  the membership `PENDING` with no partial/inconsistent state.
 - Refunds validate the payment is `SUCCESS`/`PARTIALLY_REFUNDED` and the amount does
   not exceed the remaining refundable balance.
 - Payment/refund/registration/appointment idempotency keys short-circuit duplicate
@@ -139,7 +145,7 @@ Idempotency: `Idempotency-Key` header (or body field) supported on `POST /paymen
 Automated endpoint verification was performed with `curl` against a running instance
 (see `/api_tests/test_results.md` and `/api_test_report.xlsx` for the full pass/fail
 matrix). The project also ships with `spring-boot-starter-test`, `spring-security-test`,
-and Testcontainers (MySQL) dependencies pre-wired in `pom.xml` for teams that want to
+and Testcontainers (MongoDB) dependencies pre-wired in `pom.xml` for teams that want to
 add JUnit 5/Mockito/Testcontainers integration tests going forward
 (`mvn test`, requires a Docker daemon for Testcontainers).
 
@@ -147,7 +153,9 @@ add JUnit 5/Mockito/Testcontainers integration tests going forward
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `SERVER_PORT` | `26872` | Overrides `server.port` at launch (start.sh/start.bat/Docker) |
+| `SERVER_PORT` | `29738` | Overrides `server.port` at launch (start.sh/start.bat/Docker) |
+| `SPRING_DATA_MONGODB_URI` | `mongodb://localhost:27017/generator_db` | Overrides the MongoDB connection string |
+| `ADMIN_API_KEY` | (generated value in `application.properties`) | Overrides the admin bootstrap secret |
 
 ## Project Structure
 
@@ -156,13 +164,14 @@ src/main/java/com/example/app/
 ├── AppApplication.java
 ├── config/        SecurityConfig, CorsConfig, WebSocketConfig
 ├── security/       ApiKey, ApiKeyRepository, ApiKeyFilter, ApiKeyService, ApiRole, ApiKeyStatus
-├── entity/          JPA entities + enums
-├── repository/       Spring Data JPA repositories
-├── service/            Business logic (@Transactional where required)
+├── entity/          MongoDB documents (@Document) + enums
+├── repository/       Spring Data MongoDB repositories (MongoRepository)
+├── service/            Business logic
 ├── controller/          REST controllers (thin, @Tag/@Operation annotated)
 ├── dto/                  Request/response DTOs per module
 └── exception/              GlobalExceptionHandler + domain exceptions
 src/main/resources/
-├── application.properties
-└── db/migration/            Flyway V1 (schema), V2 (seed data)
+└── application.properties
+```
+V2 (seed data)
 ```

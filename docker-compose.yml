@@ -6,9 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "26872:26872"
+      - "29738:29738"
     environment:
-      SERVER_PORT: "26872"
+      SERVER_PORT: "29738"
       SPRING_DATA_MONGODB_URI: "mongodb://db:27017/gen_4ebfb703822e"
     depends_on:
       db:

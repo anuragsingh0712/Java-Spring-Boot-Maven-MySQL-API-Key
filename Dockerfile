@@ -11,7 +11,7 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /build/target/app.jar ./app.jar
 
-ENV SERVER_PORT=26872
-EXPOSE 26872
+ENV SERVER_PORT=29738
+EXPOSE 29738
 
 ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${SERVER_PORT}"]
